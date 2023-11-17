@@ -3,68 +3,50 @@ from os import path
 from json import load
 
 class Termo:
-    def __init__(self,jogador1,jogador2) -> None:
-        self.__jogador1 = jogador1
-        self.__jogador2 = jogador2
-        self.__palavraJogador1 = self.__escolherPalavraAleatoria()
-        self.__palavraJogador2 = self.__escolherPalavraAleatoria()
-        while self.__palavraJogador2 == self.__palavraJogador1:
-            self.__palavraJogador2 = self.__escolherPalavraAleatoria()
-        self.__dictPalavra1 = self.__criarDictPalavra(self.__palavraJogador1)
-        self.__dictPalavra2 = self.__criarDictPalavra(self.__palavraJogador2)
-        self.__pontuacaoJogador1 = 0
-        self.__pontuacaoJogador2 = 0
-
-    @property
-    def jogador1(self):
-        return self.__jogador1
-    
-    @property
-    def jogador2(self):
-        return self.__jogador2
-    
-    @jogador1.setter
-    def jogador1(self, jogador):
-        self.__jogador1 = jogador
-
-    @jogador2.setter
-    def jogador2(self, jogador):
-        self.__jogador2 = jogador
-
-    @property
-    def palavraJogador1(self):
-        return self.__palavraJogador1
-    
-    @property
-    def palavraJogador2(self):
-        return self.__palavraJogador2
-    
-    @property
-    def dictPalavra1(self):
-        return self.__dictPalavra1
-    
-    @property
-    def dictPalavra2(self):
-        return self.__dictPalavra2
-    
-    @property
-    def pontuacaoJogador1(self):
-        return self.__pontuacaoJogador1
-    
-    @property
-    def pontuacaoJogador2(self):
-        return self.__pontuacaoJogador2
-    
-    def __str__(self) -> str:
-        return f'{self.__jogador1} x {self.__jogador2}'
-    
-    def __escolherPalavraAleatoria(self):
+    @staticmethod
+    def __carregarPalavras()->list[str]:
         with open(path.join(path.dirname(__file__),'palavras.json'),'r') as arquivo:
             palavras = load(arquivo)
-            palavra = palavras[randint(0,len(palavras)-1)]
+        return palavras
+
+    palavras = __carregarPalavras()
+
+    def __init__(self, qtdTentativas:int=5) -> None:
+        self.__palavra = ""
+        self.__dictPalavra = {}
+        self.__qtdTentativasRestantes = qtdTentativas
+
+        self.iniciarJogo()
+
+    def iniciarJogo(self, qtdTentativas:int=5):
+        self.__palavra = self.__escolherPalavraAleatoria()
+        self.__dictPalavra = self.__criarDictPalavra(self.__palavra)
+        self.__qtdTentativasRestantes = qtdTentativas
+
+    @property
+    def palavra(self):
+        return self.__palavra
+    
+    @property
+    def dictPalavra(self):
+        return self.__dictPalavra
+    
+    @property
+    def qtdTentativasRestantes(self):
+        return self.__qtdTentativasRestantes
+    
+    # Fazer
+    def __str__(self) -> str:
+        return f'{self.__jogador} x {self.__jogador2}'
+    
+    def __escolherPalavraAleatoria(self):
+        palavra = Termo.palavras[randint(0,len(Termo.palavras)-1)]
+        # with open(path.join(path.dirname(__file__),'palavras.json'),'r') as arquivo:
+            # palavras = load(arquivo)
+            # palavra = palavras
         return palavra
     
-    def __criarDictPalavra(self, palavra):
+    def __criarDictPalavra(self, palavra:str):
         dict_palavra = {}
         for i, letra in enumerate(palavra):
             if letra not in dict_palavra:
@@ -72,3 +54,25 @@ class Termo:
             else:
                 dict_palavra[letra].append(i)
         return dict_palavra
+    
+    def checkPalavra(self, palavra:str):
+        saida = ''
+        
+        for index,letra in enumerate(palavra):
+            if letra in self.__dictPalavra and index in self.__dictPalavra[letra]:
+                saida += '\033[92m' + letra + '\033[0m' #verde
+            elif letra in self.__dictPalavra and index not in self.__dictPalavra[letra]:
+                saida += '\033[93m' + letra + '\033[0m' #amarelo
+            else:
+                saida += '\033[90m' + letra + '\033[0m' #cinza escuro
+        return saida    
+                
+            
+
+if __name__ == '__main__':
+    jogo = Termo()
+    print(jogo.palavra)
+    print(jogo.dictPalavra)
+    print(jogo.checkPalavra('casual'))
+    print(jogo.checkPalavra('banana'))
+    print(jogo.checkPalavra('desejo'))
