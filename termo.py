@@ -1,13 +1,24 @@
 from random import randint
 from os import path
 from json import load
+from pilhaSequencial import PilhaSequencial
+import nltk
+import unidecode 
+
+
+nltk.download('floresta')
+from nltk.corpus import floresta
 
 class Termo:
     @staticmethod
-    def __carregarPalavras()->list[str]:
-        with open(path.join(path.dirname(__file__),'palavras.json'),'r') as arquivo:
-            palavras = load(arquivo)
-        return palavras
+    def __carregarPalavras() -> list[str]:
+        def __sem_acentos(palavra):
+            return all(letra.isalpha() and letra == unidecode.unidecode(letra) for letra in palavra)
+
+        palavras_portuguesas = floresta.words()
+        palavras_filtradas = [palavra.lower() for palavra in palavras_portuguesas if len(palavra) == 6 and __sem_acentos(palavra)]
+        return palavras_filtradas
+        
 
     palavras = __carregarPalavras()
 
@@ -22,6 +33,7 @@ class Termo:
         self.__palavra = self.__escolherPalavraAleatoria()
         self.__dictPalavra = self.__criarDictPalavra(self.__palavra)
         self.__qtdTentativasRestantes = qtdTentativas
+        self.__pilhaPalavras = PilhaSequencial(qtdTentativas)
 
     @property
     def palavra(self):
@@ -41,9 +53,6 @@ class Termo:
     
     def __escolherPalavraAleatoria(self):
         palavra = Termo.palavras[randint(0,len(Termo.palavras)-1)]
-        # with open(path.join(path.dirname(__file__),'palavras.json'),'r') as arquivo:
-            # palavras = load(arquivo)
-            # palavra = palavras
         return palavra
     
     def __criarDictPalavra(self, palavra:str):
@@ -56,8 +65,16 @@ class Termo:
         return dict_palavra
     
     def checkPalavra(self, palavra:str):
-        saida = ''
+        if palavra == self.__palavra:
+            return 'acertou'
         
+        elif self.__pilhaPalavras.verifica_elemento(palavra):
+            return 'Palavra repetida'
+        
+        elif len(palavra) != len(self.__palavra):
+            return 'Tamanho incorreto'
+                
+        saida = ''
         for index,letra in enumerate(palavra):
             if letra in self.__dictPalavra and index in self.__dictPalavra[letra]:
                 saida += '\033[92m' + letra + '\033[0m' #verde
@@ -65,6 +82,8 @@ class Termo:
                 saida += '\033[93m' + letra + '\033[0m' #amarelo
             else:
                 saida += '\033[90m' + letra + '\033[0m' #cinza escuro
+        self.__qtdTentativasRestantes -= 1
+        self.__pilhaPalavras.empilha(palavra)
         return saida    
                 
             
