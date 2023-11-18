@@ -1,15 +1,15 @@
-from random import randint
-from pilhaSequencial import PilhaSequencial
 import nltk
 import unidecode 
-from AVLtree import AVLTree
-
-nltk.download('floresta')
 from nltk.corpus import floresta
+
+from pilhaSequencial import PilhaSequencial
+from AVLtree import AVLTree
 
 class Termo:
     @staticmethod
     def __carregarPalavras() -> list[str]:
+        nltk.download('floresta')
+
         def __sem_acentos(palavra):
             return all(letra.isalpha() and letra == unidecode.unidecode(letra) for letra in palavra)
 
@@ -17,7 +17,8 @@ class Termo:
         palavras_filtradas = [palavra.lower() for palavra in palavras if len(palavra) == 6 and __sem_acentos(palavra)]
         return palavras_filtradas
         
-    palavras = __carregarPalavras()
+    palavras = AVLTree()
+    palavras.add_elements(__carregarPalavras())
 
 
     def __init__(self, qtdTentativas:int=5) -> None:
@@ -32,8 +33,6 @@ class Termo:
         self.__dictPalavra = self.__criarDictPalavra(self.__palavra)
         self.__qtdTentativasRestantes = qtdTentativas
         self.__pilhaPalavras = PilhaSequencial(qtdTentativas)
-        self.__arvorePalavras = AVLTree()
-        self.__arvorePalavras.add_elements(Termo.palavras)
         
     @property
     def palavra(self):
@@ -47,15 +46,15 @@ class Termo:
     def qtdTentativasRestantes(self):
         return self.__qtdTentativasRestantes
     
-    def getArvorePalavras(self):
-        return self.__arvorePalavras.inOrder(self.__arvorePalavras.root)
+    def getPalavras(self):
+        return Termo.palavras.inOrder(Termo.palavras.root)
     
     # Fazer
     def __str__(self) -> str:
         return f'{self.__jogador} x {self.__jogador2}'
     
     def __escolherPalavraAleatoria(self):
-        palavra = Termo.palavras[randint(0,len(Termo.palavras)-1)]
+        palavra = Termo.palavras.get_random()
         return palavra
     
     def __criarDictPalavra(self, palavra:str):
@@ -77,7 +76,7 @@ class Termo:
         elif len(palavra) != len(self.__palavra):
             return 'Tamanho incorreto'
         
-        elif self.__arvorePalavras.is_present(palavra):
+        elif Termo.palavras.is_present(palavra):
             return 'Palavra inexistente'
         
         saida = ''
@@ -98,7 +97,7 @@ if __name__ == '__main__':
     jogo = Termo()
     print(jogo.palavra)
     print(jogo.dictPalavra)
-    # print(jogo.checkPalavra('casual'))
-    # print(jogo.checkPalavra('banana'))
-    # print(jogo.checkPalavra('desejo'))
-    print(jogo.getArvorePalavras())
+    print(jogo.checkPalavra('casual'))
+    print(jogo.checkPalavra('banana'))
+    print(jogo.checkPalavra('desejo'))
+    # print(jogo.getPalavras())

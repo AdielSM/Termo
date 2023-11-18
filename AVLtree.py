@@ -1,3 +1,5 @@
+from random import randint
+
 class Node:
     def __init__(self, key):
         self.key = key
@@ -106,3 +108,19 @@ class AVLTree:
     def add_elements(self, lista):
         for _,item in enumerate(lista):
             self.root = self.insert(self.root, item)
+
+    def get_random(self):
+        return self.__get_random(self.root)
+
+    def __get_random(self, root):
+        # -1 = left, 0 = get, 1 = right
+        random_choice = randint(-1, 1)
+
+        if random_choice == 0:
+            return root.key
+        elif random_choice == -1 and root.left is not None:
+            return self.__get_random(root.left)
+        elif random_choice == 1 and root.right is not None:
+            return self.__get_random(root.right)
+            
+        return root.key

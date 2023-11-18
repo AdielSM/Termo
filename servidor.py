@@ -2,6 +2,7 @@
 import socket
 import os
 from threading import Thread
+
 from termo import Termo
 from listaEncadeadaSimples import ListaEncadeadaSimples
 
