@@ -15,8 +15,8 @@ class Termo:
         def __sem_acentos(palavra):
             return all(letra.isalpha() and letra == unidecode.unidecode(letra) for letra in palavra)
 
-        palavras_portuguesas = floresta.words()
-        palavras_filtradas = [palavra.lower() for palavra in palavras_portuguesas if len(palavra) == 6 and __sem_acentos(palavra)]
+        palavras = floresta.words()
+        palavras_filtradas = [palavra.lower() for palavra in palavras if len(palavra) == 6 and __sem_acentos(palavra)]
         return palavras_filtradas
         
 

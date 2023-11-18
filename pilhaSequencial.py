@@ -6,7 +6,7 @@ class PilhaException(Exception):
         super().__init__(mensagem)
 
 
-class Pilha:
+class PilhaSequencial:
     """A classe Pilha implementa a estrutura de dados "Pilha".
        Técnica: <Encadeamento/Sequencial>
        A classe foi desenvolvida de maneira a permitir que qualquer tipo de dado
@@ -183,4 +183,15 @@ class Pilha:
             s += f'{self.__array[i]}, '
         s = s.rstrip(', ')
         s += ' ]<-topo'
-        return s
+        return s        
+    
+    def verifica_elemento(self, elemento: any) -> bool:
+            """Método que verifica se um elemento está presente na pilha.
+
+            Args:
+                elemento (any): O elemento a ser verificado.
+
+            Returns:
+                bool: True se o elemento estiver presente na pilha, False caso contrário.
+            """
+            return elemento in self.__array
