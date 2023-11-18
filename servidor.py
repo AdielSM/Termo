@@ -3,12 +3,16 @@ import socket
 import os
 from threading import Thread
 from termo import Termo
+from listaEncadeadaSimples import ListaEncadeadaSimples
 
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '0.0.0.0' # IP do Servidor
 PORT = 40000 # Porta que o Servidor escuta
 
-def processa_msg_cliente(msg, con, cliente):
+
+
+
+def processa_msg_cliente(msg, con):
     msg = msg.decode().split()
     comando, parametro = msg[0], msg[1:]
     
@@ -24,8 +28,30 @@ def processa_msg_cliente(msg, con, cliente):
         return False 
     
     # Verifica a situação da palavra enviada pelo player
+    #terminar
     elif comando.upper() == 'CHECK_WORD':
-        pass
+        estado = jogo.checkPalavra(parametro[0])
+        if estado == 'acertou':
+            con.send(str.encode('+ACERTOU\n'))
+            con.send(str.encode(f'Palavra: {jogo.palavra}\n'))
+            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
+            
+        elif estado == 'Palavra repetida':
+            con.send(str.encode('-ERRO Palavra repetida\n'))
+            con.send(str.encode('Tente novamente\n'))
+            processa_msg_cliente(msg, con)
+            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
+            
+        elif estado == 'Tamanho incorreto':
+            con.send(str.encode('-ERRO Palavra deve conter 6 letras\n'))
+            con.send(str.encode('Tente novamente\n'))
+            processa_msg_cliente(msg, con)
+            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
+            
+        else:
+            con.send(str.encode(f'-ERROU {estado}\n'))
+            con.sed(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
+        
     
     # Lista os jogadores ativos
     elif comando.upper() == 'LIST_PLAYERS':
@@ -47,7 +73,7 @@ def processa_msg_cliente(msg, con, cliente):
     elif comando.upper() == 'LIST_WORDS':
         pass
         
-    # daria para fazer um jogador novamente, e caso o jogador continuasse, armazenasse a quantidade de palavras que ele acertou naquela sessão?
+    # daria para fazer um jogador jogador novamente, e caso o jogador continuasse, armazenasse a quantidade de palavras que ele acertou naquela sessão?
     elif comando.upper() == 'LIST_SCORE':
         pass
     
@@ -60,3 +86,25 @@ def processa_msg_cliente(msg, con, cliente):
         return False
     
     return True
+
+
+jogadoresAtivos = ListaEncadeadaSimples()
+
+def main():
+    # Cria o socket do servidor
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Permite que o servidor seja reiniciado rapidamente
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    # Associa o socket do servidor com o IP e a porta definidos
+    sock.bind((HOST, PORT))
+    # Habilita o servidor a aceitar conexões
+    sock.listen()
+    print(f'Servidor escutando em {HOST}:{PORT} ...')
+    while True:
+        # Aceita uma nova conexão
+        con, cliente = sock.accept()
+        print(f'Conexão estabelecida com {cliente}')
+        # Cria uma nova thread para processar a mensagem do cliente
+        t = Thread(target=processa_msg_cliente, args=(con.recv(TAM_MSG), con, cliente))
+        t.start()
+    sock.close()
