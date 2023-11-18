@@ -47,6 +47,9 @@ class Termo:
     def qtdTentativasRestantes(self):
         return self.__qtdTentativasRestantes
     
+    def getArvorePalavras(self):
+        return self.__arvorePalavras.inOrder(self.__arvorePalavras.root)
+    
     # Fazer
     def __str__(self) -> str:
         return f'{self.__jogador} x {self.__jogador2}'
@@ -74,7 +77,7 @@ class Termo:
         elif len(palavra) != len(self.__palavra):
             return 'Tamanho incorreto'
         
-        elif not self.__arvorePalavras.is_present(palavra):
+        elif self.__arvorePalavras.is_present(palavra):
             return 'Palavra inexistente'
         
         saida = ''
@@ -95,6 +98,7 @@ if __name__ == '__main__':
     jogo = Termo()
     print(jogo.palavra)
     print(jogo.dictPalavra)
-    print(jogo.checkPalavra('casual'))
-    print(jogo.checkPalavra('banana'))
-    print(jogo.checkPalavra('desejo'))
+    # print(jogo.checkPalavra('casual'))
+    # print(jogo.checkPalavra('banana'))
+    # print(jogo.checkPalavra('desejo'))
+    print(jogo.getArvorePalavras())

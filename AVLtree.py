@@ -9,6 +9,7 @@ class AVLTree:
     def __init__(self):
         self.root = None
     
+    
     def getHeight(self, node):
         if not node:
             return 0
@@ -82,6 +83,14 @@ class AVLTree:
             self.preOrder(root.right)
             
 
+    
+    def inOrder(self, root):
+        if root:
+            self.inOrder(root.left)
+            print("{0} ".format(root.key), end="")
+            self.inOrder(root.right)
+        
+
     def is_present(self, key):
         return self.search(self.root, key) is not None
 
@@ -93,3 +102,7 @@ class AVLTree:
             return self.search(root.left, key)
         else:
             return self.search(root.right, key)
+        
+    def add_elements(self, lista):
+        for _,item in enumerate(lista):
+            self.root = self.insert(self.root, item)
