@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import socket
-import os
 from threading import Thread
 
 from termo import Termo
-from listaEncadeadaSimples import ListaEncadeadaSimples
+from Estruturas.listaEncadeadaSimples import ListaEncadeadaSimples
 
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '0.0.0.0' # IP do Servidor
@@ -56,7 +55,7 @@ def processa_msg_cliente(msg, con):
             con.send(str.encode(f'-ERROU {estado}\n'))
             con.sed(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
         
-    
+        
     # Lista os jogadores ativos
     elif comando.upper() == 'LIST_PLAYERS':
         pass
