@@ -1,10 +1,8 @@
 from random import randint
-from os import path
-from json import load
 from pilhaSequencial import PilhaSequencial
 import nltk
 import unidecode 
-
+from AVLtree import AVLTree
 
 nltk.download('floresta')
 from nltk.corpus import floresta
@@ -19,8 +17,8 @@ class Termo:
         palavras_filtradas = [palavra.lower() for palavra in palavras if len(palavra) == 6 and __sem_acentos(palavra)]
         return palavras_filtradas
         
-
     palavras = __carregarPalavras()
+
 
     def __init__(self, qtdTentativas:int=5) -> None:
         self.__palavra = ""
@@ -34,7 +32,9 @@ class Termo:
         self.__dictPalavra = self.__criarDictPalavra(self.__palavra)
         self.__qtdTentativasRestantes = qtdTentativas
         self.__pilhaPalavras = PilhaSequencial(qtdTentativas)
-
+        self.__arvorePalavras = AVLTree()
+        self.__arvorePalavras.add_elements(Termo.palavras)
+        
     @property
     def palavra(self):
         return self.__palavra
@@ -73,7 +73,10 @@ class Termo:
         
         elif len(palavra) != len(self.__palavra):
             return 'Tamanho incorreto'
-                
+        
+        elif not self.__arvorePalavras.is_present(palavra):
+            return 'Palavra inexistente'
+        
         saida = ''
         for index,letra in enumerate(palavra):
             if letra in self.__dictPalavra and index in self.__dictPalavra[letra]:

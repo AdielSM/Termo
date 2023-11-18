@@ -10,8 +10,6 @@ HOST = '0.0.0.0' # IP do Servidor
 PORT = 40000 # Porta que o Servidor escuta
 
 
-
-
 def processa_msg_cliente(msg, con):
     msg = msg.decode().split()
     comando, parametro = msg[0], msg[1:]
@@ -28,7 +26,6 @@ def processa_msg_cliente(msg, con):
         return False 
     
     # Verifica a situação da palavra enviada pelo player
-    #terminar
     elif comando.upper() == 'CHECK_WORD':
         estado = jogo.checkPalavra(parametro[0])
         if estado == 'acertou':
@@ -44,6 +41,12 @@ def processa_msg_cliente(msg, con):
             
         elif estado == 'Tamanho incorreto':
             con.send(str.encode('-ERRO Palavra deve conter 6 letras\n'))
+            con.send(str.encode('Tente novamente\n'))
+            processa_msg_cliente(msg, con)
+            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
+            
+        elif estado == 'Palavra inexiste':
+            con.send(str.encode('-ERRO Essa palavra não é aceita\n'))
             con.send(str.encode('Tente novamente\n'))
             processa_msg_cliente(msg, con)
             con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
