@@ -36,4 +36,18 @@ CHECK_WORD banana
 +SEM_TENTATIVAS
 
 Ex: Palavra correta = buscar
-CHE…
+CHECK_WORD banana
++SEM_TENTATIVAS
+
++ERRO
+mensagem de erro
+
+Ex: Palavra correta = buscar
+CHECK_WORD pamonha
++ERRO
+“Palavra deve conter 6 letras”
+
+Ex: Palavra correta = buscar
+CHECK_WORD asdasddwqd
++ERRO
+“Essa palavra não é aceita”
