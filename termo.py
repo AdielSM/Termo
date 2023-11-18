@@ -5,13 +5,21 @@ from typing import List, Dict, Union
 class Termo:
     @staticmethod
     def __carregarPalavras() -> List[str]:
-        with open('listaPalavras.txt', 'r') as arquivo:
+        with open('.txt/bancoDePalavras.txt', 'r') as arquivo:
             palavras = [palavra.strip() for palavra in arquivo.readlines()]
             palavras = [palavra.replace('\x00', '') for palavra in palavras]
             return palavras
 
-    palavras: AVLTree = AVLTree()
-    palavras.add_elements(__carregarPalavras())
+    @staticmethod
+    def __carregarPalavrasTermo() -> List[str]:
+        with open('.txt/listaPalavrasTermo.txt', 'r') as arquivo:
+            palavras = [palavra.strip() for palavra in arquivo.readlines()]
+            return palavras
+
+    bancoPalavras: AVLTree = AVLTree()
+    bancoPalavras.add_elements(__carregarPalavras())
+    palavrasTermo: AVLTree = AVLTree()
+    palavrasTermo.add_elements(__carregarPalavrasTermo())
 
     def __init__(self, qtdTentativas: int = 5) -> None:
         self.__palavra: str = ""
@@ -46,7 +54,7 @@ class Termo:
         return f'{self.__jogador} x {self.__jogador2}'
 
     def __escolherPalavraAleatoria(self) -> str:
-        palavra = Termo.palavras.get_random()
+        palavra = Termo.palavrasTermo.get_random()
         return palavra
 
     def __criarDictPalavra(self, palavra: str) -> Dict[str, List[int]]:
@@ -61,11 +69,14 @@ class Termo:
     def checkPalavra(self, palavra: str) -> Union[str, None]:
         if palavra == self.__palavra:
             return 'acertou'
+        
         elif self.__pilhaPalavras.verifica_elemento(palavra):
             return 'Palavra repetida'
+        
         elif len(palavra) != len(self.__palavra):
             return 'Tamanho incorreto'
-        elif not Termo.palavras.is_present(palavra):
+        
+        elif not Termo.bancoPalavras.is_present(palavra):
             return 'Palavra inexistente'
         
         saida = ''
@@ -84,7 +95,7 @@ if __name__ == '__main__':
     jogo = Termo()
     print(jogo.palavra)
     print(jogo.dictPalavra)
-    print(jogo.checkPalavra('casual'))
+    print(jogo.checkPalavra('wertyu'))
     print(jogo.checkPalavra('banana'))
     print(jogo.checkPalavra('desejo'))
     # print(jogo.getPalavras())

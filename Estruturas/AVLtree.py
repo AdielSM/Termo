@@ -109,18 +109,14 @@ class AVLTree:
         for _,item in enumerate(lista):
             self.root = self.insert(self.root, item)
 
-    def get_random(self):
-        return self.__get_random(self.root)
-
-    def __get_random(self, root):
-        # -1 = left, 0 = get, 1 = right
-        random_choice = randint(-1, 1)
-
-        if random_choice == 0:
-            return root.key
-        elif random_choice == -1 and root.left is not None:
-            return self.__get_random(root.left)
-        elif random_choice == 1 and root.right is not None:
-            return self.__get_random(root.right)
+    def turn_list(self, root):
+        if root:
+            self.turn_list(root.left)
+            self.lista.append(root.key)
+            self.turn_list(root.right)
             
-        return root.key
+    def get_random(self):
+        self.lista = []
+        self.turn_list(self.root)
+        return self.lista[randint(0, len(self.lista)-1)]
+    
