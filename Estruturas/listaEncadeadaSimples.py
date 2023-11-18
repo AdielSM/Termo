@@ -108,7 +108,7 @@ class Lista:
             cursor = cursor.next
             contador += 1
             
-        raise ListaException(f'O valor {valor} não está armazenado na lista')
+        raise ListaException(f'O valor {chave} não está armazenado na lista')
 
     def inserir(self, posicao:int, carga:any ):
         try:
@@ -196,3 +196,8 @@ class Lista:
 
         str = str[:-2] + " ]"
         return str
+    
+    def append(self, carga: any):
+        self.inserir(len(self)+1, carga)
+    
+    

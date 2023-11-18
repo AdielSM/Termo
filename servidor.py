@@ -1,16 +1,27 @@
 #!/usr/bin/env python3
 import socket
-from threading import Thread
+from threading import Thread, Lock
 
 from termo import Termo
-from Estruturas.listaEncadeadaSimples import ListaEncadeadaSimples
+from Estruturas.listaEncadeadaSimples import Lista
 
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '0.0.0.0' # IP do Servidor
 PORT = 40000 # Porta que o Servidor escuta
 
+jogadoresAtivos = Lista()
+jogadoresAtivos_lock = Lock()
 
-def processa_msg_cliente(msg, con):
+def handle_client(con, cliente):
+    while True:
+        msg = con.recv(TAM_MSG)
+        if not msg:
+            break
+        processa_msg_cliente(msg, con, cliente)
+    con.close()
+    
+    
+def processa_msg_cliente(msg, con, cliente):
     msg = msg.decode().split()
     comando, parametro = msg[0], msg[1:]
     
@@ -36,19 +47,19 @@ def processa_msg_cliente(msg, con):
         elif estado == 'Palavra repetida':
             con.send(str.encode('-ERRO Palavra repetida\n'))
             con.send(str.encode('Tente novamente\n'))
-            processa_msg_cliente(msg, con)
+            processa_msg_cliente(msg, con, cliente)
             con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
             
         elif estado == 'Tamanho incorreto':
             con.send(str.encode('-ERRO Palavra deve conter 6 letras\n'))
             con.send(str.encode('Tente novamente\n'))
-            processa_msg_cliente(msg, con)
+            processa_msg_cliente(msg, con, cliente)
             con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
             
         elif estado == 'Palavra inexiste':
             con.send(str.encode('-ERRO Essa palavra não é aceita\n'))
             con.send(str.encode('Tente novamente\n'))
-            processa_msg_cliente(msg, con)
+            processa_msg_cliente(msg, con, cliente)
             con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
             
         else:
@@ -62,7 +73,10 @@ def processa_msg_cliente(msg, con):
     
     # Adiciona um jogador à lista de jogadores ativos, poderia ser um comando alternativo para o GetGame ?
     elif comando.upper() == 'ADD_PLAYER':
-        pass
+        with jogadoresAtivos_lock:
+            jogador = (cliente[0], cliente[1])
+            jogadoresAtivos.append(jogador)
+        con.send(str.encode('+OK\n'))
     
     # Remove um jogador da lista de jogadores ativos forçadamente
     elif comando.upper() == 'REMOVE_PLAYER':
@@ -90,24 +104,3 @@ def processa_msg_cliente(msg, con):
     
     return True
 
-
-jogadoresAtivos = ListaEncadeadaSimples()
-
-def main():
-    # Cria o socket do servidor
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # Permite que o servidor seja reiniciado rapidamente
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # Associa o socket do servidor com o IP e a porta definidos
-    sock.bind((HOST, PORT))
-    # Habilita o servidor a aceitar conexões
-    sock.listen()
-    print(f'Servidor escutando em {HOST}:{PORT} ...')
-    while True:
-        # Aceita uma nova conexão
-        con, cliente = sock.accept()
-        print(f'Conexão estabelecida com {cliente}')
-        # Cria uma nova thread para processar a mensagem do cliente
-        t = Thread(target=processa_msg_cliente, args=(con.recv(TAM_MSG), con, cliente))
-        t.start()
-    sock.close()
