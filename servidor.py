@@ -14,79 +14,49 @@ def processa_msg_cliente(msg, con, cliente):
     
     if comando.upper() == 'GET_GAME':
         jogo = Termo()
+        con.send(str.encode(f'+OK \n'))
+        #logica do jogo
         
-        
-        
-        
-        # nome_arq = " ".join(msg[1:])
-        # print('Arquivo solicitado:', nome_arq)
-        # try:
-        #     status_arq = os.stat(nome_arq)
-        #     con.send(str.encode('+OK {}\n'.format(status_arq.st_size)))
-        #     arq = open(nome_arq, "rb")
-        #     while True:
-        #         dados = arq.read(TAM_MSG)
-        #         if not dados: break
-        #         con.send(dados)
-        # except Exception as e:
-        #     con.send(str.encode('-ERR {}\n'.format(e)))
+    
+    # Encerra a conexão com o servidor
     elif comando.upper() == 'EXIT_GAME':
         con.send(str.encode('+OK\n'))
         return False 
     
+    # Verifica a situação da palavra enviada pelo player
     elif comando.upper() == 'CHECK_WORD':
         pass
     
+    # Lista os jogadores ativos
+    elif comando.upper() == 'LIST_PLAYERS':
+        pass
+    
+    # Adiciona um jogador à lista de jogadores ativos, poderia ser um comando alternativo para o GetGame ?
+    elif comando.upper() == 'ADD_PLAYER':
+        pass
+    
+    # Remove um jogador da lista de jogadores ativos forçadamente
+    elif comando.upper() == 'REMOVE_PLAYER':
+        pass
+        
+    # Lista as partidas em andamento
+    elif comando.upper() == 'LIST_GAMES':
+        pass
+    
+    # Lista as palavras que estão sendo usadas no momento e em qual partida
+    elif comando.upper() == 'LIST_WORDS':
+        pass
+        
+    # daria para fazer um jogador novamente, e caso o jogador continuasse, armazenasse a quantidade de palavras que ele acertou naquela sessão?
+    elif comando.upper() == 'LIST_SCORE':
+        pass
+    
+    elif comando.upper() == 'ADD_SCORE':
+        pass
     
     
+    else:
+        con.send(str.encode('-ERR Comando inválido\n'))
+        return False
     
-    
-    
-    
-    
-    
-#     elif msg[0].upper() == 'LIST':
-#         lista_arq = os.listdir('.')
-#         con.send(str.encode('+OK {}\n'.format(len(lista_arq))))
-#         for nome_arq in lista_arq:
-#             if os.path.isfile(nome_arq):
-#                 status_arq = os.stat(nome_arq)
-#                 con.send(str.encode('arq: {} - {:.1f}KB\n'.
-#                     format(nome_arq, status_arq.st_size/1024)))
-
-#             elif os.path.isdir(nome_arq):
-#                 con.send(str.encode('dir: {}\n'.format(nome_arq)))
-#             else:
-#                 con.send(str.encode('esp: {}\n'.format(nome_arq)))
-
-#     elif msg[0].upper() == 'CWD':
-#         cam_dir = " ".join(msg[1:])
-#         try:
-#             os.chdir(cam_dir)
-#             con.send(str.encode('+OK'))
-#         except Exception as e:
-#             con.send(str.encode(f'-ERR {e}\n'))
-#     else:
-#         con.send(str.encode('-ERR Invalid command\n'))
-#     return True
-
-# def processa_cliente(con, cliente):
-#     print('Cliente conectado', cliente)
-#     while True:
-#         msg = con.recv(TAM_MSG)
-#         if not msg or not processa_msg_cliente(msg, con, cliente): break
-#     con.close()
-#     print('Cliente desconectado', cliente)
-
-# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# serv = (HOST, PORT)
-# sock.bind(serv)
-# sock.listen(50)
-# while True:
-#     try:
-#         con, cliente = sock.accept()
-#     except: break
-#     # processa_cliente(con, cliente)
-#     t = Thread(target=processa_cliente, args=(con, cliente))
-#     t.start()
-# sock.close()
+    return True
