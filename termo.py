@@ -1,22 +1,14 @@
-import nltk
-import unidecode 
-from nltk.corpus import floresta
-
 from pilhaSequencial import PilhaSequencial
 from AVLtree import AVLTree
 
 class Termo:
     @staticmethod
     def __carregarPalavras() -> list[str]:
-        nltk.download('floresta')
+        with open('listaPalavras.txt', 'r') as arquivo:
+            palavras = [palavra.strip() for palavra in arquivo.readlines()]
+            palavras = [palavra.replace('\x00', '') for palavra in palavras]
+            return palavras
 
-        def __sem_acentos(palavra):
-            return all(letra.isalpha() and letra == unidecode.unidecode(letra) for letra in palavra)
-
-        palavras = floresta.words()
-        palavras_filtradas = [palavra.lower() for palavra in palavras if len(palavra) == 6 and __sem_acentos(palavra)]
-        return palavras_filtradas
-        
     palavras = AVLTree()
     palavras.add_elements(__carregarPalavras())
 
@@ -76,7 +68,7 @@ class Termo:
         elif len(palavra) != len(self.__palavra):
             return 'Tamanho incorreto'
         
-        elif Termo.palavras.is_present(palavra):
+        elif not Termo.palavras.is_present(palavra):
             return 'Palavra inexistente'
         
         saida = ''
