@@ -1,6 +1,8 @@
 from Estruturas.pilhaSequencial import PilhaSequencial
 from Estruturas.AVLtree import AVLTree
 from typing import List, Dict, Union
+import time 
+import sys
 
 class Termo:
     @staticmethod
@@ -27,7 +29,7 @@ class Termo:
         self.__qtdTentativasRestantes: int = qtdTentativas
         self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
 
-        self.iniciarJogo()
+        self.iniciarJogo(qtdTentativas)
 
     def iniciarJogo(self, qtdTentativas: int = 5) -> None:
         self.__palavra = self.__escolherPalavraAleatoria()
@@ -67,6 +69,7 @@ class Termo:
         return dict_palavra
 
     def checkPalavra(self, palavra: str) -> Union[str, None]:
+        
         if palavra == self.__palavra:
             return 'acertou'
         
@@ -87,15 +90,38 @@ class Termo:
                 saida += '\033[93m' + letra + '\033[0m' #amarelo
             else:
                 saida += '\033[90m' + letra + '\033[0m' #cinza escuro
+        
         self.__qtdTentativasRestantes -= 1
         self.__pilhaPalavras.empilha(palavra)
-        return saida
+        
+        if self.__verificaDerrota():
+            self.__animacao_palavra_secreta()
+            return ''
+        else:
+            return saida
+    
+
+    def __verificaDerrota(self):
+        return self.__qtdTentativasRestantes == 0
+
+    def __animacao_palavra_secreta(self):
+        palavra_transformada = ['_' for _ in self.__palavra]
+        
+        sys.stdout.write('Você perdeu! A palavra era: ' + '\n')
+        
+        for i in range(len(self.__palavra)):
+            time.sleep(1)
+            palavra_transformada[i] = self.__palavra[i]
+            sys.stdout.write('\r' + ''.join(palavra_transformada))
+            sys.stdout.flush()
+        
 
 if __name__ == '__main__':
-    jogo = Termo()
+    jogo = Termo(qtdTentativas=1)
     print(jogo.palavra)
     print(jogo.dictPalavra)
-    print(jogo.checkPalavra('wertyu'))
-    print(jogo.checkPalavra('banana'))
-    print(jogo.checkPalavra('desejo'))
-    # print(jogo.getPalavras())
+    entrado = input()
+    print(jogo.checkPalavra(entrado))
+
+    
+
