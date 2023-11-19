@@ -1,30 +1,31 @@
 from random import randint
+from typing import List, Optional
 
 class Node:
-    def __init__(self, key):
-        self.key = key
-        self.height = 1
-        self.left = None
-        self.right = None
+    def __init__(self, key: int):
+        self.key: int = key
+        self.height: int = 1
+        self.left: Optional[Node] = None
+        self.right: Optional[Node] = None
 
 class AVLTree:
     def __init__(self):
-        self.root = None
+        self.root: Optional[Node] = None
     
     
-    def getHeight(self, node):
+    def getHeight(self, node: Optional[Node]) -> int:
         if not node:
             return 0
         return node.height
 
-    def getBalance(self, node):
+    def getBalance(self, node: Optional[Node]) -> int:
         if not node:
             return 0
         return self.getHeight(node.left) - self.getHeight(node.right)
 
-    def rightRotate(self, y):
-        x = y.left
-        T2 = x.right
+    def rightRotate(self, y: Node) -> Node:
+        x: Node = y.left
+        T2: Optional[Node] = x.right
 
         x.right = y
         y.left = T2
@@ -34,9 +35,9 @@ class AVLTree:
 
         return x
 
-    def leftRotate(self, x):
-        y = x.right
-        T2 = y.left
+    def leftRotate(self, x: Node) -> Node:
+        y: Node = x.right
+        T2: Optional[Node] = y.left
 
         y.left = x
         x.right = T2
@@ -46,7 +47,7 @@ class AVLTree:
 
         return y
 
-    def insert(self, root, key):
+    def insert(self, root: Optional[Node], key: int) -> Node:
         if not root:
             return Node(key)
         
@@ -78,25 +79,41 @@ class AVLTree:
 
         return root
 
-    def preOrder(self, root):
+
+    def preOrder(self) -> None:
+        self.__preOrder(self.root)
+
+    def __preOrder(self, root: Optional[Node]) -> None:
         if root:
-            print("{0} ".format(root.key), end="")
-            self.preOrder(root.left)
-            self.preOrder(root.right)
+            print(f'{root.key} ', end="")
+            self.__preOrder(root.left)
+            self.__preOrder(root.right)
+            
+            
+    def inOrder(self) -> None:
+        self.__inOrder(self.root)
+    
+    def __inOrder(self, root: Optional[Node]) -> None:
+        if root:
+            self.__inOrder(root.left)
+            print(f'{root.key} ',end="")
+            self.__inOrder(root.right)
+            
+            
+    def postOrder(self) -> None:
+        self.__postOrder(self.root)        
+    
+    def __postOrder(self, root: Optional[Node]) -> None:
+        if root:
+            self.__postOrder(root.left)
+            self.__postOrder(root.right)
+            print(f'{root.key} ',end="")
             
 
-    
-    def inOrder(self, root):
-        if root:
-            self.inOrder(root.left)
-            print("{0} ".format(root.key), end="")
-            self.inOrder(root.right)
-        
-
-    def is_present(self, key):
+    def is_present(self, key: int) -> bool:
         return self.search(self.root, key) is not None
 
-    def search(self, root, key):
+    def search(self, root: Optional[Node], key: int) -> Optional[Node]:
         if not root or root.key == key:
             return root
         
@@ -105,18 +122,30 @@ class AVLTree:
         else:
             return self.search(root.right, key)
         
-    def add_elements(self, lista):
-        for _,item in enumerate(lista):
+    def add_elements(self, lst: List[int]) -> None:
+        for _, item in enumerate(lst):
             self.root = self.insert(self.root, item)
 
-    def turn_list(self, root):
+    def turn_list(self) -> List[int]:
+        self.lst = []
+        self.__turn_list(self.root)
+        return self.lst
+
+    def __turn_list(self, root: Optional[Node]) -> None:
         if root:
-            self.turn_list(root.left)
-            self.lista.append(root.key)
-            self.turn_list(root.right)
+            self.__turn_list(root.left)
+            self.lst.append(root.key)
+            self.__turn_list(root.right)
             
-    def get_random(self):
-        self.lista = []
-        self.turn_list(self.root)
-        return self.lista[randint(0, len(self.lista)-1)]
+    def get_random(self) -> int:
+        self.lst = []
+        self.turn_list()
+        return self.lst[randint(0, len(self.lst)-1)]
     
+
+if __name__ == '__main__':
+    tree = AVLTree()
+    lst = [1,2,3,4,5,6,7,8,9]
+    tree.add_elements(lst)
+    tree.inOrder()
+    print(tree.turn_list())
