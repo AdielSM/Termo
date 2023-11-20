@@ -95,8 +95,7 @@ class Termo:
         self.__pilhaPalavras.empilha(palavra)
         
         if self.__verificaDerrota():
-            self.__animacao_palavra_secreta()
-            return ''
+            return self.__animacao_palavra_secreta()
         else:
             return saida
     
@@ -104,17 +103,18 @@ class Termo:
     def __verificaDerrota(self):
         return self.__qtdTentativasRestantes == 0
 
+    # é necessário fazer a lógica do print da animação no cliente ou no servidor (possivelmente no cliente)
     def __animacao_palavra_secreta(self):
         palavra_transformada = ['_' for _ in self.__palavra]
+        animacao = []
         
-        sys.stdout.write('Você perdeu! A palavra era: ' + '\n')
+        animacao.append('Você perdeu! A palavra era: ')
         
         for i in range(len(self.__palavra)):
-            time.sleep(1)
             palavra_transformada[i] = self.__palavra[i]
-            sys.stdout.write('\r' + ''.join(palavra_transformada))
-            sys.stdout.flush()
+            animacao.append(''.join(palavra_transformada))
         
+        return animacao
 
 if __name__ == '__main__':
     jogo = Termo(qtdTentativas=1)
