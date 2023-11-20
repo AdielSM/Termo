@@ -1,7 +1,8 @@
-from Estruturas.pilhaSequencial import PilhaSequencial
-from Estruturas.AVLtree import AVLTree
 from typing import List, Dict, Union
 from enum import Enum
+
+from Estruturas.pilhaSequencial import PilhaSequencial
+from Estruturas.AVLtree import AVLTree
 
 class Estado(Enum):
     Sem_jogo = 1
@@ -43,7 +44,7 @@ class Termo:
         self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo = Estado.Sem_jogo
 
-        self.iniciarJogo()
+        self.iniciarJogo(qtdTentativas)
 
     def iniciarJogo(self, qtdTentativas: int = 5) -> None:
         self.__palavra = self.__escolherPalavraAleatoria()
@@ -71,7 +72,6 @@ class Termo:
         return f'{self.__jogador} x {self.__jogador2}'
 
     def __escolherPalavraAleatoria(self) -> str:
-        print("Escolheu")
         palavra = Termo.palavrasTermo.get_random()
         return palavra
 
@@ -114,8 +114,27 @@ class Termo:
         self.__qtdTentativasRestantes -= 1
         self.__pilhaPalavras.empilha(palavra)
 
-        if self.__qtdTentativasRestantes == 0: self.__estadoDoJogo = Estado.Jogo_sem_tentativa
+        # if self.__verificaDerrota():
+        if self.__qtdTentativasRestantes == 0:
+            self.__estadoDoJogo = Estado.Jogo_sem_tentativa
+            return self.__animacao_palavra_secreta()
         return saida
+        
+    def __verificaDerrota(self):
+        return self.__qtdTentativasRestantes == 0
+
+    # é necessário fazer a lógica do print da animação no cliente ou no servidor (possivelmente no cliente)
+    def __animacao_palavra_secreta(self):
+        palavra_transformada = ['_' for _ in self.__palavra]
+        animacao = []
+        
+        animacao.append('Você perdeu! A palavra era: ')
+        
+        for i in range(len(self.__palavra)):
+            palavra_transformada[i] = self.__palavra[i]
+            animacao.append(''.join(palavra_transformada))
+        
+        return animacao
 
 # Para testes internos
 # if __name__ == '__main__':
