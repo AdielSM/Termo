@@ -3,3 +3,8 @@
 [ ] Otimizar o código
 [ ] Organizar estrutura de pastas do projeto
 [X] Melhorar organização de funções com tipagem
+[ ] Fazer Enum para gerenciar mensagens do servidor
+[ ] Fazer Enum para gerenciar mensagens do cliente
+[X] Fazer Enum para gerenciar estados do jogo
+[ ] Corrigir retorno "com delay" do servidor
+[ ] Levar pilha de palavras repetidas para o cliente tratar

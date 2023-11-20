@@ -1,6 +1,16 @@
 from Estruturas.pilhaSequencial import PilhaSequencial
 from Estruturas.AVLtree import AVLTree
 from typing import List, Dict, Union
+from enum import Enum
+
+class Estado(Enum):
+    Sem_jogo = 1
+    Jogo_com_tentativa = 2
+    Jogo_sem_tentativa = 3
+    # Para quando não houver limite de tentativas, implementação futura
+    Jogo_ilimitado = 4
+    Derrota = 5
+    Vitoria = 6
 
 class Termo:
     @staticmethod
@@ -16,8 +26,11 @@ class Termo:
             palavras = [palavra.strip() for palavra in arquivo.readlines()]
             return palavras
 
+    # Palavras para validação
     bancoPalavras: AVLTree = AVLTree()
     bancoPalavras.add_elements(__carregarPalavras())
+
+    # Palavras para sorteio
     palavrasTermo: AVLTree = AVLTree()
     palavrasTermo.add_elements(__carregarPalavrasTermo())
 
@@ -25,7 +38,10 @@ class Termo:
         self.__palavra: str = ""
         self.__dictPalavra: Dict[str, List[int]] = {}
         self.__qtdTentativasRestantes: int = qtdTentativas
+
+        # Corrigir pilha pro lado do cliente, aqui está no servidor
         self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
+        self.__estadoDoJogo = Estado.Sem_jogo
 
         self.iniciarJogo()
 
@@ -34,6 +50,7 @@ class Termo:
         self.__dictPalavra = self.__criarDictPalavra(self.__palavra)
         self.__qtdTentativasRestantes = qtdTentativas
         self.__pilhaPalavras = PilhaSequencial(qtdTentativas)
+        self.__estadoDoJogo = Estado.Jogo_com_tentativa
 
     @property
     def palavra(self) -> str:
@@ -54,6 +71,7 @@ class Termo:
         return f'{self.__jogador} x {self.__jogador2}'
 
     def __escolherPalavraAleatoria(self) -> str:
+        print("Escolheu")
         palavra = Termo.palavrasTermo.get_random()
         return palavra
 
@@ -67,9 +85,14 @@ class Termo:
         return dict_palavra
 
     def checkPalavra(self, palavra: str) -> Union[str, None]:
+        # Só avança com tentativa
+        if not self.__estadoDoJogo == Estado.Jogo_com_tentativa: pass
+
         if palavra == self.__palavra:
+            self.__estadoDoJogo = Estado.Vitoria
             return 'acertou'
         
+        # A ser tratado no cliente
         elif self.__pilhaPalavras.verifica_elemento(palavra):
             return 'Palavra repetida'
         
@@ -87,15 +110,19 @@ class Termo:
                 saida += '\033[93m' + letra + '\033[0m' #amarelo
             else:
                 saida += '\033[90m' + letra + '\033[0m' #cinza escuro
+
         self.__qtdTentativasRestantes -= 1
         self.__pilhaPalavras.empilha(palavra)
+
+        if self.__qtdTentativasRestantes == 0: self.__estadoDoJogo = Estado.Jogo_sem_tentativa
         return saida
 
-if __name__ == '__main__':
-    jogo = Termo()
-    print(jogo.palavra)
-    print(jogo.dictPalavra)
-    print(jogo.checkPalavra('wertyu'))
-    print(jogo.checkPalavra('banana'))
-    print(jogo.checkPalavra('desejo'))
+# Para testes internos
+# if __name__ == '__main__':
+#     jogo = Termo()
+#     print(jogo.palavra)
+#     print(jogo.dictPalavra)
+#     print(jogo.checkPalavra('wertyu'))
+#     print(jogo.checkPalavra('banana'))
+#     print(jogo.checkPalavra('desejo'))
     # print(jogo.getPalavras())

@@ -2,7 +2,7 @@
 import socket
 from threading import Thread, Lock
 
-from termo import Termo
+from Termo import Termo
 from Estruturas.listaEncadeadaSimples import Lista
 
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
@@ -12,21 +12,23 @@ PORT = 40000 # Porta que o Servidor escuta
 jogadoresAtivos = Lista()
 jogadoresAtivos_lock = Lock()
 
+# Por que o inglês do nada? kkkkk
 def handle_client(con, cliente):
+    jogo = Termo()
+
     while True:
         msg = con.recv(TAM_MSG)
-        if not msg:
-            break
-        processa_msg_cliente(msg, con, cliente)
+        if not msg: break
+        processa_msg_cliente(msg, con, cliente, jogo)
     con.close()
     
     
-def processa_msg_cliente(msg, con, cliente):
+def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     msg = msg.decode().split()
     comando, parametro = msg[0], msg[1:]
     
     if comando.upper() == 'GET_GAME':
-        jogo = Termo()
+        jogo.iniciarJogo()
         con.send(str.encode(f'+OK \n'))
         #logica do jogo
         
@@ -39,33 +41,27 @@ def processa_msg_cliente(msg, con, cliente):
     # Verifica a situação da palavra enviada pelo player
     elif comando.upper() == 'CHECK_WORD':
         estado = jogo.checkPalavra(parametro[0])
+        # Fazer Enum pra gerenciar esses estados
         if estado == 'acertou':
             con.send(str.encode('+ACERTOU\n'))
             con.send(str.encode(f'Palavra: {jogo.palavra}\n'))
-            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
             
         elif estado == 'Palavra repetida':
             con.send(str.encode('-ERRO Palavra repetida\n'))
             con.send(str.encode('Tente novamente\n'))
-            processa_msg_cliente(msg, con, cliente)
-            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
             
         elif estado == 'Tamanho incorreto':
             con.send(str.encode('-ERRO Palavra deve conter 6 letras\n'))
             con.send(str.encode('Tente novamente\n'))
-            processa_msg_cliente(msg, con, cliente)
-            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
             
-        elif estado == 'Palavra inexiste':
+        elif estado == 'Palavra inexistente':
             con.send(str.encode('-ERRO Essa palavra não é aceita\n'))
             con.send(str.encode('Tente novamente\n'))
-            processa_msg_cliente(msg, con, cliente)
-            con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
             
         else:
             con.send(str.encode(f'-ERROU {estado}\n'))
-            con.sed(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
-        
+
+        con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
         
     # Lista os jogadores ativos
     elif comando.upper() == 'LIST_PLAYERS':
@@ -104,3 +100,15 @@ def processa_msg_cliente(msg, con, cliente):
     
     return True
 
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.bind((HOST, PORT))
+sock.listen(10)
+
+while True:
+    try:
+        con, cliente = sock.accept()
+    except: break
+    # processa_cliente(con, cliente)
+    t = Thread(target=handle_client, args=(con, cliente))
+    t.start()
+sock.close()
