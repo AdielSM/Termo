@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import socket
 from threading import Thread, Lock
 
@@ -43,25 +42,22 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
         estado = jogo.checkPalavra(parametro[0])
         # Fazer Enum pra gerenciar esses estados
         if estado == 'acertou':
-            con.send(str.encode('+ACERTOU\n'))
-            con.send(str.encode(f'Palavra: {jogo.palavra}\n'))
+            resposta = f'+ACERTOU\nPalavra: {jogo.palavra}\n{jogo.qtdTentativasRestantes} tentativas restantes\n'
             
         elif estado == 'Palavra repetida':
-            con.send(str.encode('-ERRO Palavra repetida\n'))
-            con.send(str.encode('Tente novamente\n'))
+            resposta = '-ERRO Palavra repetida\nTente novamente\n'
             
         elif estado == 'Tamanho incorreto':
-            con.send(str.encode('-ERRO Palavra deve conter 6 letras\n'))
-            con.send(str.encode('Tente novamente\n'))
+            resposta = '-ERRO Palavra deve conter 6 letras\nTente novamente\n'
             
         elif estado == 'Palavra inexistente':
-            con.send(str.encode('-ERRO Essa palavra não é aceita\n'))
-            con.send(str.encode('Tente novamente\n'))
-            
+            resposta = '-ERRO Essa palavra não é aceita\nTente novamente\n'
+        
         else:
-            con.send(str.encode(f'-ERROU {estado}\n'))
-
-        con.send(str.encode(f'{jogo.qtdTentativasRestantes} tentativas restantes\n'))
+            resposta = f'-ERROU {estado}\n{jogo.qtdTentativasRestantes} tentativas restantes\n'
+        
+        con.send(str.encode(resposta))
+        return True
         
     # Lista os jogadores ativos
     elif comando.upper() == 'LIST_PLAYERS':

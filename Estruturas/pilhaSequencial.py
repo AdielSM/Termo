@@ -1,10 +1,8 @@
 import numpy as np
 
-
 class PilhaException(Exception):
     def __init__(self, mensagem):
         super().__init__(mensagem)
-
 
 class PilhaSequencial:
     """A classe Pilha implementa a estrutura de dados "Pilha".
