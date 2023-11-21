@@ -4,6 +4,14 @@ from threading import Thread, Lock
 from Termo import Termo
 from Estruturas.listaEncadeadaSimples import Lista
 
+from enum import Enum
+
+class Estado(Enum):
+    ACERTOU = 'acertou'
+    PALAVRA_REPETIDA = 'Palavra repetida'
+    TAMANHO_INCORRETO = 'Tamanho incorreto'
+    PALAVRA_INEXISTENTE = 'Palavra inexistente'
+
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '0.0.0.0' # IP do Servidor
 PORT = 40000 # Porta que o Servidor escuta
@@ -40,21 +48,19 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     # Verifica a situação da palavra enviada pelo player
     elif comando.upper() == 'CHECK_WORD':
         estado = jogo.checkPalavra(parametro[0])
-        # Fazer Enum pra gerenciar esses estados
-        if estado == 'acertou':
-            resposta = f'+ACERTOU\nPalavra: {jogo.palavra}\n{jogo.qtdTentativasRestantes} tentativas restantes\n'
-            
-        elif estado == 'Palavra repetida':
-            resposta = '-ERRO Palavra repetida\nTente novamente\n'
-            
-        elif estado == 'Tamanho incorreto':
-            resposta = '-ERRO Palavra deve conter 6 letras\nTente novamente\n'
-            
-        elif estado == 'Palavra inexistente':
-            resposta = '-ERRO Essa palavra não é aceita\nTente novamente\n'
         
-        else:
-            resposta = f'-ERROU {estado}\n{jogo.qtdTentativasRestantes} tentativas restantes\n'
+        
+        erro_prefixo = '-ERROU,'
+        estados_respostas = {
+            Estado.ACERTOU : '+ACERTOU,' + jogo.palavra,
+            Estado.PALAVRA_REPETIDA : '-ERROU,palavra_repetida',
+            Estado.TAMANHO_INCORRETO : '-ERROU,tamanho_incorreto',
+            Estado.PALAVRA_INEXISTENTE : '-ERROU,palavra_inexistente',
+            estado: erro_prefixo + estado
+        }
+        
+        resposta = estados_respostas.get(estado, '-ERROU,estado_desconhecido')
+        resposta += f',{jogo.qtdTentativasRestantes}'
         
         con.send(str.encode(resposta))
         return True
