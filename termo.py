@@ -65,8 +65,8 @@ class Termo:
     def qtdTentativasRestantes(self) -> int:
         return self.__qtdTentativasRestantes
 
-    def getPalavras(self) -> List[str]:
-        return Termo.palavras.inOrder(Termo.palavras.root)
+    def getPalavrasTermo(self) -> List[str]:
+        return Termo.palavrasTermo.inOrder()
 
     def __str__(self) -> str:
         return f'{self.__jogador} x {self.__jogador2}'
@@ -136,7 +136,7 @@ class Termo:
         
         return animacao
 
-# Para testes internos
+#* Para testes internos
 # if __name__ == '__main__':
 #     jogo = Termo()
 #     print(jogo.palavra)
@@ -144,4 +144,4 @@ class Termo:
 #     print(jogo.checkPalavra('wertyu'))
 #     print(jogo.checkPalavra('banana'))
 #     print(jogo.checkPalavra('desejo'))
-    # print(jogo.getPalavras())
+#     # jogo.getPalavras()

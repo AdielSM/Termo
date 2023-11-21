@@ -10,8 +10,8 @@ class Node:
 
 class AVLTree:
     def __init__(self):
-        self.root: Optional[Node] = None
-    
+        self.__root: Optional[Node] = None
+        self.__list: List[int] = []
     
     def getHeight(self, node: Optional[Node]) -> int:
         if not node:
@@ -49,6 +49,7 @@ class AVLTree:
 
     def insert(self, root: Optional[Node], key: int) -> Node:
         if not root:
+            self.__list.append(key)
             return Node(key)
         
         if key < root.key:
@@ -81,7 +82,7 @@ class AVLTree:
 
 
     def preOrder(self) -> None:
-        self.__preOrder(self.root)
+        self.__preOrder(self.__root)
 
     def __preOrder(self, root: Optional[Node]) -> None:
         if root:
@@ -91,7 +92,7 @@ class AVLTree:
             
             
     def inOrder(self) -> None:
-        self.__inOrder(self.root)
+        self.__inOrder(self.__root)
     
     def __inOrder(self, root: Optional[Node]) -> None:
         if root:
@@ -101,7 +102,7 @@ class AVLTree:
             
             
     def postOrder(self) -> None:
-        self.__postOrder(self.root)        
+        self.__postOrder(self.__root)        
     
     def __postOrder(self, root: Optional[Node]) -> None:
         if root:
@@ -111,7 +112,7 @@ class AVLTree:
             
 
     def is_present(self, key: int) -> bool:
-        return self.search(self.root, key) is not None
+        return self.search(self.__root, key) is not None
 
     def search(self, root: Optional[Node], key: int) -> Optional[Node]:
         if not root or root.key == key:
@@ -124,23 +125,14 @@ class AVLTree:
         
     def add_elements(self, lst: List[int]) -> None:
         for _, item in enumerate(lst):
-            self.root = self.insert(self.root, item)
+            self.__root = self.insert(self.__root, item)
 
     def turn_list(self) -> List[int]:
-        self.lst = []
-        self.__turn_list(self.root)
-        return self.lst
+        return self.__list
 
-    def __turn_list(self, root: Optional[Node]) -> None:
-        if root:
-            self.__turn_list(root.left)
-            self.lst.append(root.key)
-            self.__turn_list(root.right)
             
     def get_random(self) -> int:
-        self.lst = []
-        self.turn_list()
-        return self.lst[randint(0, len(self.lst)-1)]
+        return self.__list[randint(0, len(self.__list)-1)]
     
 
 if __name__ == '__main__':
