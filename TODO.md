@@ -1,5 +1,9 @@
 **[ ] Atualizar o protocolo!!!**
 
+**[ ] pip freeze**
+
+**[ ] transformar em arquivo json**
+
 [ ] Resolver banco de palavras que é limitado
 [X] Organizar algum arquivo de configurações para os downloads necessários do pip
 [ ] Otimizar o código
@@ -8,5 +12,5 @@
 [ ] Fazer Enum para gerenciar mensagens do servidor
 [ ] Fazer Enum para gerenciar mensagens do cliente
 [X] Fazer Enum para gerenciar estados do jogo
-[ ] Corrigir retorno "com delay" do servidor
+[X] Corrigir retorno "com delay" do servidor
 [ ] Levar pilha de palavras repetidas para o cliente tratar
