@@ -1,3 +1,5 @@
+**[ ] Atualizar o protocolo!!!**
+
 [ ] Resolver banco de palavras que é limitado
 [X] Organizar algum arquivo de configurações para os downloads necessários do pip
 [ ] Otimizar o código
