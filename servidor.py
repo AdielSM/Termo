@@ -36,32 +36,31 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     
     if comando.upper() == 'GET_GAME':
         jogo.iniciarJogo()
-        con.send(str.encode(f'+OK \n'))
-        #logica do jogo
-        
+        con.send(str.encode(f'+START Jogo Iniciado!'))
     
+            
     # Encerra a conexão com o servidor
     elif comando.upper() == 'EXIT_GAME':
-        con.send(str.encode('+OK\n'))
+        con.send(str.encode('-EXIT Serviço Encerrado!'))
         return False 
     
     # Verifica a situação da palavra enviada pelo player
     elif comando.upper() == 'CHECK_WORD':
         estado = jogo.checkPalavra(parametro[0])
         
-        
-        erro_prefixo = '-ERROU,'
+        erro_prefixo = '-ERROU '
         estados_respostas = {
-            Estado.ACERTOU : '+ACERTOU,' + jogo.palavra,
-            Estado.PALAVRA_REPETIDA : '-ERROU,palavra_repetida',
-            Estado.TAMANHO_INCORRETO : '-ERROU,tamanho_incorreto',
-            Estado.PALAVRA_INEXISTENTE : '-ERROU,palavra_inexistente',
+            Estado.ACERTOU : '+ACERTOU ' + jogo.palavra,
+            Estado.PALAVRA_REPETIDA : '-ERROU palavra_repetida',
+            Estado.TAMANHO_INCORRETO : '-ERROU tamanho_incorreto',
+            Estado.PALAVRA_INEXISTENTE : '-ERROU palavra_inexistente',
             estado: erro_prefixo + estado
         }
         
-        resposta = estados_respostas.get(estado, '-ERROU,estado_desconhecido')
-        resposta += f',{jogo.qtdTentativasRestantes}'
+        resposta = estados_respostas.get(estado, '-ERROU estado_desconhecido')
+        resposta += f' {jogo.qtdTentativasRestantes}'
         
+        print(resposta)
         con.send(str.encode(resposta))
         return True
         
@@ -95,9 +94,8 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     elif comando.upper() == 'ADD_SCORE':
         pass
     
-    
     else:
-        con.send(str.encode('-ERR Comando inválido\n'))
+        con.send(str.encode('-ERR Comando inválido'))
         return False
     
     return True
