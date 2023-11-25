@@ -1,16 +1,32 @@
 import socket
 from threading import Thread, Lock
 
-from Termo import Termo
+from termo import Termo
 from Estruturas.listaEncadeadaSimples import Lista
 
 from enum import Enum
 
-class Estado(Enum):
-    ACERTOU = 'acertou'
-    PALAVRA_REPETIDA = 'Palavra repetida'
-    TAMANHO_INCORRETO = 'Tamanho incorreto'
-    PALAVRA_INEXISTENTE = 'Palavra inexistente'
+class Resposta_CHECK_WORD(Enum):
+    ACERTOU = {
+        "key": "acertou",
+        'status': "+ACERTOU",
+        'msg_status': "Parabéns, você acertou!"
+    }
+    PALAVRA_REPETIDA = {
+        "key": "Palavra repetida",
+        'status': "-ERROU",
+        'msg_status': 'Palavra repetida'
+    }
+    TAMANHO_INCORRETO = {
+        "key": "Tamanho incorreto",
+        'status': "-ERROU",
+        'msg_status': 'Tamanho incorreto'
+    }
+    PALAVRA_INEXISTENTE = {
+        "key": "Palavra inexistente",
+        'status': "-ERROU",
+        'msg_status': 'Palavra inexistente'
+    }
 
 TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '0.0.0.0' # IP do Servidor
@@ -36,32 +52,35 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     
     if comando.upper() == 'GET_GAME':
         jogo.iniciarJogo()
-        con.send(str.encode(f'+START Jogo Iniciado!'))
+        con.send(str.encode(f'+START\nJogo Iniciado!'))
     
             
     # Encerra a conexão com o servidor
     elif comando.upper() == 'EXIT_GAME':
-        con.send(str.encode('-EXIT Serviço Encerrado!'))
+        con.send(str.encode('-EXIT\nServiço Encerrado!'))
         return False 
     
     # Verifica a situação da palavra enviada pelo player
     elif comando.upper() == 'CHECK_WORD':
         estado = jogo.checkPalavra(parametro[0])
+
+        try:
+            estadoModificado = estado.upper().replace(' ', '_')
+            resposta = '\n'.join([
+                Resposta_CHECK_WORD[estadoModificado].value['status'],
+                Resposta_CHECK_WORD[estadoModificado].value['msg_status'],
+                str(jogo.qtdTentativasRestantes)
+            ])
+        except KeyError: #Devolveu a palavra colorida
+            resposta = '\n'.join([
+                '-ERROU',
+                estado,
+                str(jogo.qtdTentativasRestantes)
+            ])
+        finally:
+            print(resposta)
+            con.send(str.encode(resposta))
         
-        erro_prefixo = '-ERROU '
-        estados_respostas = {
-            Estado.ACERTOU : '+ACERTOU ' + jogo.palavra,
-            Estado.PALAVRA_REPETIDA : '-ERROU palavra_repetida',
-            Estado.TAMANHO_INCORRETO : '-ERROU tamanho_incorreto',
-            Estado.PALAVRA_INEXISTENTE : '-ERROU palavra_inexistente',
-            estado: erro_prefixo + estado
-        }
-        
-        resposta = estados_respostas.get(estado, '-ERROU estado_desconhecido')
-        resposta += f' {jogo.qtdTentativasRestantes}'
-        
-        print(resposta)
-        con.send(str.encode(resposta))
         return True
         
     # Lista os jogadores ativos
@@ -95,7 +114,7 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
         pass
     
     else:
-        con.send(str.encode('-ERR Comando inválido'))
+        con.send(str.encode('-ERR\nComando inválido'))
         return False
     
     return True

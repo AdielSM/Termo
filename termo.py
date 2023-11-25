@@ -128,13 +128,13 @@ class Termo:
         palavra_transformada = ['_' for _ in self.__palavra]
         animacao = []
         
-        animacao.append('Você perdeu! A palavra era: ')
+        animacao.append('Você perdeu! A palavra era:')
         
         for i in range(len(self.__palavra)):
             palavra_transformada[i] = self.__palavra[i]
             animacao.append(''.join(palavra_transformada))
         
-        return animacao
+        return ' '.join(animacao)
 
 #* Para testes internos
 # if __name__ == '__main__':

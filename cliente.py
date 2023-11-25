@@ -20,7 +20,7 @@ while True:
     else:
         sock.send(str.encode(cmd_usr))
         server_msg = sock.recv(TAM_MSG)
-        server_msg_status = server_msg.decode().split()[0]
+        server_msg_status = server_msg.decode().split('\n')[0]
         
         saida = server_msg.decode()[len(server_msg_status)+1:]
         
@@ -31,13 +31,13 @@ while True:
             sock.close()
             break
             
-        elif server_msg_status == '+START': print(saida)
+        # elif server_msg_status == '+START': print(saida)
         
-        else:
-            server_msg = saida
-            saida = server_msg.split(',')
-            print(saida[0])
-            print(saida[1])
+        else: print(saida)
+            # server_msg = saida
+            # saida = server_msg.split(',')
+            # print(saida[0])
+            # print(saida[1])
             
     # msg_status = dados.decode().split('\n')[0]
     # dados = dados[len(msg_status)+1:]
