@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import socket
+from utils.server_config import config_server
 
-TAM_MSG = 1024 # Tamanho do bloco de mensagem
 HOST = '127.0.0.1' # IP do Servidor
-PORT = 40000 # Porta que o Servidor escuta
+TAM_MSG, PORT, SEPARADOR = config_server()
+SEPARADOR = '\n' # Corrigir erro do separador
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((HOST, PORT))
@@ -20,9 +21,9 @@ while True:
     else:
         sock.send(str.encode(cmd_usr))
         server_msg = sock.recv(TAM_MSG)
-        server_msg_status = server_msg.decode().split('\n')[0]
+        server_msg_status = server_msg.decode().split(SEPARADOR)[0]
         
-        saida = server_msg.decode()[len(server_msg_status)+1:]
+        saida = server_msg.decode()[len(server_msg_status)+len(SEPARADOR):]
         
         if server_msg_status == '-ERR': print(saida)        
 
