@@ -1,53 +1,93 @@
-****GET_GAME** ** – Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
+# GET /game/start
+Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 
-+OK
-primeira letra (ex: “s”)
+## Resposta:
+200 OK
+```json
+{
+    "message": "Jogo iniciado"
+}
+```
 
-+ERRO
+400 Bad Request
+```json
+{
+    "error": "mensagem de erro"
+}
+```
 
-Ex:
-**GET_GAME** 
-“a”
- 
-**EXIT_GAME** - Solicita que o jogo atual se encerre
+# GET /game/exit
+Solicita que o jogo atual se encerre
 
-+OK - O jogo é encerrado.
+## Resposta:
+200 OK
+```json
+{
+    "message": "O jogo é encerrado."
+}
+```
 
-****CHECK_WORD**** palavra - Envia uma palavra para validação no lado do servidor (checando se acertou)
+# POST /game/check-word
+Envia uma palavra para validação no lado do servidor (checando se acertou)
 
-+ACERTOU
-quantidades de tentativas anteriores
+## Requisição:
+```json
+{
+    "word": "palavra"
+}
+```
 
-Ex: Palavra correta = buscar
-**CHECK_WORD** buscar
-+ACERTOU
-3
+## Resposta:
+200 OK
+```json
+{
+    "status": "+ACERTOU",
+    "attempts": "quantidades de tentativas anteriores"
+}
+```
 
-+ERROU
-devolve palavra com feedback visual (letras verdes se há aquela letra naquela posição, letras amarelas se há aquela letra em outra posição)
-quantidade de tentativas restantes
+200 OK
+```json
+{
+    "status": "+ERROU",
+    "feedback": [
+        {
+            "index": 0,
+            "modification": "green",
+        },
+        {
+            "index": 1,
+            "modification": "yellow",
+        },
+        {
+            "index": 2,
+            "modification": "yellow",
+        },
+        {
+            "index": 4,
+            "modification": "green",
+        }
+    ],
+    "remaining_attempts": "quantidade de tentativas restantes"
 
-Ex: Palavra correta = buscar
-**CHECK_WORD** banana
-+ERROU
-“\033[92mb\033[93ma\033[0mnana” (visualmente: “banana”)
-2
+}
+```
 
-+SEM_TENTATIVAS
+200 OK
+```json
+{
+    "status": "+SEM_TENTATIVAS"
+}
+```
 
-Ex: Palavra correta = buscar
-**CHECK_WORD** banana
-+SEM_TENTATIVAS
+### Mensagem de erro:
+Serve para indicar que o usuário tentou enviar uma palavra inválida (não é uma palavra, já foi enviada, etc)
 
-+ERRO
-mensagem de erro
-
-Ex: Palavra correta = buscar
-**CHECK_WORD** pamonha
-+ERRO
-“Palavra deve conter 6 letras”
-
-Ex: Palavra correta = buscar
-**CHECK_WORD** asdasddwqd
-+ERRO
-“Essa palavra não é aceita”
+400 Bad Request
+```json
+{   
+    "status": 400
+    "error": "mensagem de erro"
+    "remaining_attempts": "quantidade de tentativas restantes
+}
+```
