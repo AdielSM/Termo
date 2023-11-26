@@ -14,44 +14,33 @@ class Estado(Enum):
     Vitoria = 6
 
 class Termo:
-    @staticmethod
-    def __carregarPalavras() -> List[str]:
-        with open('.txt/bancoDePalavras.txt', 'r') as arquivo:
-            palavras = [palavra.strip() for palavra in arquivo.readlines()]
-            palavras = [palavra.replace('\x00', '') for palavra in palavras]
-            return palavras
-
-    @staticmethod
-    def __carregarPalavrasTermo() -> List[str]:
-        with open('.txt/listaPalavrasTermo.txt', 'r') as arquivo:
-            palavras = [palavra.strip() for palavra in arquivo.readlines()]
-            return palavras
-
-    # Palavras para validação
     bancoPalavras: AVLTree = AVLTree()
-    bancoPalavras.add_elements(__carregarPalavras())
-
-    # Palavras para sorteio
-    palavrasTermo: AVLTree = AVLTree()
-    palavrasTermo.add_elements(__carregarPalavrasTermo())
+    
+    
+    @staticmethod
+    def __carregarPalavras():
+        if not Termo.bancoPalavras:  # Verifica se as palavras já foram carregadas
+            with open('.txt/bancoDePalavras.txt', 'r') as arquivo:
+                palavras = [palavra.strip().replace('\x00', '') for palavra in arquivo.readlines()]
+                Termo.bancoPalavras.add_elements(palavras)
+                Termo.palavras = palavras  # Armazena as palavras na variável de classe
 
     def __init__(self, qtdTentativas: int = 5) -> None:
-        self.__palavra: str = ""
-        self.__dictPalavra: Dict[str, List[int]] = {}
-        self.__qtdTentativasRestantes: int = qtdTentativas
+        Termo.__carregarPalavras()  # Carrega as palavras, se ainda não foram carregadas
 
-        # Corrigir pilha pro lado do cliente, aqui está no servidor
+        self.__qtdTentativasRestantes: int = qtdTentativas
         self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo = Estado.Sem_jogo
 
         self.iniciarJogo(qtdTentativas)
 
-    def iniciarJogo(self, qtdTentativas: int = 5) -> None:
+    def iniciarJogo(self, qtdTentativas) -> None:
         self.__palavra = self.__escolherPalavraAleatoria()
         self.__dictPalavra = self.__criarDictPalavra(self.__palavra)
         self.__qtdTentativasRestantes = qtdTentativas
         self.__pilhaPalavras = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo = Estado.Jogo_com_tentativa
+        
 
     @property
     def palavra(self) -> str:
@@ -71,8 +60,11 @@ class Termo:
     def __str__(self) -> str:
         return f'{self.__jogador} x {self.__jogador2}'
 
+    def jogoNaoIniciado(self) -> bool:
+        return self.__estadoDoJogo == Estado.Sem_jogo
+
     def __escolherPalavraAleatoria(self) -> str:
-        palavra = Termo.palavrasTermo.get_random()
+        palavra = Termo.bancoPalavras.get_random()
         return palavra
 
     def __criarDictPalavra(self, palavra: str) -> Dict[str, List[int]]:
@@ -84,44 +76,41 @@ class Termo:
                 dict_palavra[letra].append(i)
         return dict_palavra
 
-    def checkPalavra(self, palavra: str) -> Union[str, None]:
+    def checkWord(self, palavra: str) -> Union[str, None]:
         # Só avança com tentativa
         if not self.__estadoDoJogo == Estado.Jogo_com_tentativa: pass
 
         if palavra == self.__palavra:
             self.__estadoDoJogo = Estado.Vitoria
-            return 'acertou'
+            return "+ACERTOU"
         
         # A ser tratado no cliente
         elif self.__pilhaPalavras.verifica_elemento(palavra):
-            return 'Palavra repetida'
+            return 'Palavra Repetida'
         
         elif len(palavra) != len(self.__palavra):
-            return 'Tamanho incorreto'
+            return 'Tamanho Incorreto'
         
         elif not Termo.bancoPalavras.is_present(palavra):
-            return 'Palavra inexistente'
+            return 'Palavra Inexistente'
         
-        saida = ''
+        feedback = []
         for index, letra in enumerate(palavra):
             if letra in self.__dictPalavra and index in self.__dictPalavra[letra]:
-                saida += '\033[92m' + letra + '\033[0m' #verde
+                feedback.append('green')
             elif letra in self.__dictPalavra and index not in self.__dictPalavra[letra]:
-                saida += '\033[93m' + letra + '\033[0m' #amarelo
+                feedback.append('yellow')
             else:
-                saida += '\033[90m' + letra + '\033[0m' #cinza escuro
+                feedback.append('gray')
 
         self.__qtdTentativasRestantes -= 1
         self.__pilhaPalavras.empilha(palavra)
 
-        # if self.__verificaDerrota():
         if self.__qtdTentativasRestantes == 0:
             self.__estadoDoJogo = Estado.Jogo_sem_tentativa
-            return self.__animacao_palavra_secreta()
-        return saida
         
-    def __verificaDerrota(self):
-        return self.__qtdTentativasRestantes == 0
+        return feedback
+        
 
     # é necessário fazer a lógica do print da animação no cliente ou no servidor (possivelmente no cliente)
     def __animacao_palavra_secreta(self):
