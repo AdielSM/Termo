@@ -1,4 +1,5 @@
 import socket
+import json
 from threading import Thread, Lock
 
 from termo import Termo
@@ -6,16 +7,13 @@ from Estruturas.listaEncadeadaSimples import Lista
 
 from utils.server_config import config_server
 
-from Enum.Resposta_CHECK_WORD import Resposta_CHECK_WORD
-
-HOST = '0.0.0.0' # IP do Servidor
-TAM_MSG, PORT, SEPARADOR = config_server()
-SEPARADOR = '\n' # Corrigir erro do separador
+HOST = '0.0.0.0'
+TAM_MSG, PORT = config_server()
 
 jogadoresAtivos = Lista()
 jogadoresAtivos_lock = Lock()
 
-# Por que o inglês do nada? kkkkk
+
 def handle_client(con, cliente):
     jogo = Termo()
 
@@ -27,52 +25,93 @@ def handle_client(con, cliente):
     
     
 def processa_msg_cliente(msg, con, cliente, jogo:Termo):
-    msg = msg.decode().split()
-    comando, parametro = msg[0], msg[1:]
+    data = json.loads(msg.decode())  
     
-    if comando.upper() == 'GET_GAME':
-        jogo.iniciarJogo()
-        con.send(str.encode(f'+START{SEPARADOR}Jogo Iniciado!'))
-    
-            
-    # Encerra a conexão com o servidor
-    elif comando.upper() == 'EXIT_GAME':
-        con.send(str.encode(f'-EXIT{SEPARADOR}Serviço Encerrado!'))
-        return False 
-    
-    # Verifica a situação da palavra enviada pelo player
-    elif comando.upper() == 'CHECK_WORD':
-        estado = jogo.checkPalavra(parametro[0])
+    comando = data.get('comando').lower()
+    parametro = data.get('parametro')
+    print(comando)
+    print(parametro)
 
-        try:
-            estadoModificado = estado.upper().replace(' ', '_')
-            resposta = SEPARADOR.join([
-                Resposta_CHECK_WORD[estadoModificado].value['status'],
-                Resposta_CHECK_WORD[estadoModificado].value['msg_status'],
-                str(jogo.qtdTentativasRestantes)
-            ])
-        except KeyError: #Devolveu a palavra colorida
-            resposta = SEPARADOR.join([
-                '-ERROU',
-                estado,
-                str(jogo.qtdTentativasRestantes)
-            ])
-        finally:
-            print(resposta)
-            con.send(str.encode(resposta))
+    if comando == '/game/start':
+        if not jogo.jogoNaoIniciado():  
+            data = {
+                "status": 400,
+                "message": "O jogo já foi iniciado."
+            }
+        else:
+            try:    
+                jogo.iniciarJogo()
+                data = {
+                    "status": 200,
+                    "message": "Jogo iniciado com sucesso."
+                }
+            except Exception as e: 
+                data = {
+                    "status": 400,
+                    "message": str(e)  
+                }
+            finally:
+                response = json.dumps(data)
+                con.sendall(response.encode())
+                
+    # Encerra a conexão com o servidor
+    elif comando.upper() == '/game/exit':
+        if jogo.jogoNaoInicado():
+            data = {
+                "status" : 400,
+                "message" : "Não existe nenhum jogo iniciado."
+            }
+            
+        else:
+            try:
+                del jogo
+                data = {
+                    "status" : 200,
+                    "message" : "Jogo encerrado"
+                }
+            except Exception as e:
+                data = {
+                    "status" : 400,
+                    "message" : "Não existe nenhum jogo iniciado"
+                }
+            finally:
+                response = json.dumps(data)
+                con.sendall(response.encode())
+                
+    # Verifica a situação da palavra enviada pelo player
+    elif comando.upper() == "/game/check_word":
+        feedback = jogo.checkWord(parametro)
         
-        return True
+        listTermoError = ["Palavra Repetida","Tamanho Incorreto","Palavra Inexistente"]
+        
+        if feedback in listTermoError:
+            data = {
+                "status" : 400,
+                "message" : feedback,
+                "remaining_attemps" : jogo.qtdTentativasRestantes
+            }
+            
+        else:
+            data = {        
+                "status" : 200,
+                "message" : feedback,
+                "remaining_attemps" : jogo.qtdTentativasRestantes
+            }
+            
+        response = json.dumps(data)
+        con.sendall(response.encode())
+            
         
     # Lista os jogadores ativos
     elif comando.upper() == 'LIST_PLAYERS':
         pass
     
     # Adiciona um jogador à lista de jogadores ativos, poderia ser um comando alternativo para o GetGame ?
-    elif comando.upper() == 'ADD_PLAYER':
-        with jogadoresAtivos_lock:
-            jogador = (cliente[0], cliente[1])
-            jogadoresAtivos.append(jogador)
-        con.send(str.encode(f'+OK{SEPARADOR}'))
+    # elif comando.upper() == 'ADD_PLAYER':
+    #     with jogadoresAtivos_lock:
+    #         jogador = (cliente[0], cliente[1])
+    #         jogadoresAtivos.append(jogador)
+    #     con.sendall(str.encode(f'+OK{SEPARADOR}'))
     
     # Remove um jogador da lista de jogadores ativos forçadamente
     elif comando.upper() == 'REMOVE_PLAYER':
@@ -82,7 +121,7 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     elif comando.upper() == 'LIST_GAMES':
         pass
     
-    # Lista as palavras que estão sendo usadas no momento e em qual partida
+    # Lista as palavras que estão sendallo usadas no momento e em qual partida
     elif comando.upper() == 'LIST_WORDS':
         pass
         
@@ -94,8 +133,12 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
         pass
     
     else:
-        con.send(str.encode(f'-ERR{SEPARADOR}Comando inválido'))
-        return False
+        data = {
+            "status": 400,
+            "message": "Comando iiiiinválido"
+        }
+        response = json.dumps(data)
+        con.sendall(response.encode())
     
     return True
 
