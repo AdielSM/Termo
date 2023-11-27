@@ -1,13 +1,11 @@
-import socket
-import json
-from threading import Thread, Lock
-
 from termo import Termo
 from Jogador import Jogador
+import socket
+import json
 
-from Estruturas.listaEncadeadaSimples import Lista
+from threading import Thread, Lock
+from utils import config_server
 
-from utils.server_config import config_server
 
 HOST = '0.0.0.0'
 TAM_MSG, PORT = config_server()
