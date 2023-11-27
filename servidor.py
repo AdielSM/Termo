@@ -3,6 +3,8 @@ import json
 from threading import Thread, Lock
 
 from termo import Termo
+from Jogador import Jogador
+
 from Estruturas.listaEncadeadaSimples import Lista
 
 from utils.server_config import config_server
@@ -10,53 +12,67 @@ from utils.server_config import config_server
 HOST = '0.0.0.0'
 TAM_MSG, PORT = config_server()
 
-jogadoresAtivos = Lista()
+jogadoresAtivos = []
 jogadoresAtivos_lock = Lock()
 
-
 def handle_client(con, cliente):
-    jogo = Termo()
-
+    
     while True:
         msg = con.recv(TAM_MSG)
         if not msg: break
-        processa_msg_cliente(msg, con, cliente, jogo)
+        processa_msg_cliente(msg, con, cliente)
     con.close()
     
     
-def processa_msg_cliente(msg, con, cliente, jogo:Termo):
+def processa_msg_cliente(msg, con, cliente):
     data = json.loads(msg.decode())  
     
     comando = data.get('comando').lower()
     parametro = data.get('parametro')
-    print(comando)
-    print(parametro)
+    
+    for jogador in jogadoresAtivos:
+        if jogador.cliente == cliente:
+            jogo = jogador.jogo
+            break
+    
+    else:
+        jogo = None
+    
 
     if comando == '/game/start':
-        if not jogo.jogoNaoIniciado():  
+        
+        if cliente in jogadoresAtivos:  
             data = {
                 "status": 400,
-                "message": "O jogo já foi iniciado."
+                "message": "Já existe um jogo iniciado"
             }
+            
         else:
             try:    
-                jogo.iniciarJogo()
+                jogador = Jogador(cliente, con)
+                jogador.jogadorAtivo = True
+                jogador.jogo = Termo()                
+                
+                with jogadoresAtivos_lock:
+                    jogadoresAtivos.append(cliente)
+                    
                 data = {
                     "status": 200,
                     "message": "Jogo iniciado com sucesso."
                 }
+                
             except Exception as e: 
                 data = {
                     "status": 400,
                     "message": str(e)  
                 }
-            finally:
-                response = json.dumps(data)
-                con.sendall(response.encode())
+            
+        response = json.dumps(data)
+        con.send(response.encode())
                 
     # Encerra a conexão com o servidor
     elif comando.upper() == '/game/exit':
-        if jogo.jogoNaoInicado():
+        if cliente not in jogadoresAtivos:
             data = {
                 "status" : 400,
                 "message" : "Não existe nenhum jogo iniciado."
@@ -64,42 +80,70 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
             
         else:
             try:
-                del jogo
+                for jogador in jogadoresAtivos:
+                        
+                        if jogador.cliente == cliente:
+                            with jogadoresAtivos_lock:
+                                jogadoresAtivos.remove(jogador)
+                                jogador.jogadorAtivo = False
+                                break
+                            
                 data = {
                     "status" : 200,
                     "message" : "Jogo encerrado"
                 }
+                
             except Exception as e:
                 data = {
                     "status" : 400,
-                    "message" : "Não existe nenhum jogo iniciado"
+                    "message" : str(e)
                 }
-            finally:
-                response = json.dumps(data)
-                con.sendall(response.encode())
+                
+        response = json.dumps(data)
+        con.send(response.encode())
                 
     # Verifica a situação da palavra enviada pelo player
     elif comando.upper() == "/game/check_word":
-        feedback = jogo.checkWord(parametro)
         
-        listTermoError = ["Palavra Repetida","Tamanho Incorreto","Palavra Inexistente"]
-        
-        if feedback in listTermoError:
+        if not jogo:
             data = {
                 "status" : 400,
-                "message" : feedback,
-                "remaining_attemps" : jogo.qtdTentativasRestantes
+                "message" : "Não existe nenhum jogo iniciado."
+            }
+            
+        elif not parametro:
+            data = {
+                "status" : 400,
+                "message" : "Nenhuma Palavra foi passada."
             }
             
         else:
-            data = {        
-                "status" : 200,
-                "message" : feedback,
-                "remaining_attemps" : jogo.qtdTentativasRestantes
-            }
+            feedback = jogo.checkWord(parametro)
             
+            listTermoError = ["Palavra Repetida","Tamanho Incorreto","Palavra Inexistente"]
+            
+            if feedback in listTermoError:
+                data = {
+                    "status" : 400,
+                    "message" : feedback,
+                    "remaining_attemps" : jogo.qtdTentativasRestantes
+                }
+                
+            else:
+                
+                if feedback == "Palavra Correta.":
+                    jogador.pontuacao += 1
+                    jogador.jogadorVencedor = True
+                    
+                data = {        
+                    "status" : 200,
+                    "message" : feedback,
+                    "remaining_attemps" : jogo.qtdTentativasRestantes
+                }
+                
         response = json.dumps(data)
-        con.sendall(response.encode())
+        con.send(response.encode())
+    
             
         
     # Lista os jogadores ativos
@@ -111,7 +155,7 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     #     with jogadoresAtivos_lock:
     #         jogador = (cliente[0], cliente[1])
     #         jogadoresAtivos.append(jogador)
-    #     con.sendall(str.encode(f'+OK{SEPARADOR}'))
+    #     con.send(str.encode(f'+OK{SEPARADOR}'))
     
     # Remove um jogador da lista de jogadores ativos forçadamente
     elif comando.upper() == 'REMOVE_PLAYER':
@@ -121,7 +165,7 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     elif comando.upper() == 'LIST_GAMES':
         pass
     
-    # Lista as palavras que estão sendallo usadas no momento e em qual partida
+    # Lista as palavras que estão sendo usadas no momento e em qual partida
     elif comando.upper() == 'LIST_WORDS':
         pass
         
@@ -135,10 +179,11 @@ def processa_msg_cliente(msg, con, cliente, jogo:Termo):
     else:
         data = {
             "status": 400,
-            "message": "Comando iiiiinválido"
+            "message": "Comando inválido"
         }
+        
         response = json.dumps(data)
-        con.sendall(response.encode())
+        con.send(response.encode())
     
     return True
 
@@ -149,8 +194,8 @@ sock.listen(10)
 while True:
     try:
         con, cliente = sock.accept()
+        t = Thread(target=handle_client, args=(con, cliente))
+        t.start()
     except: break
-    # processa_cliente(con, cliente)
-    t = Thread(target=handle_client, args=(con, cliente))
-    t.start()
+    
 sock.close()
