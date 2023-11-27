@@ -139,14 +139,21 @@ def processa_msg_cliente(msg, con, cliente):
                 
             else:
                 
+                palavraAnimacao = None
+                
                 if feedback == "Palavra Correta.":
                     jogador.pontuacao += 1
                     jogador.jogadorVencedor = True
                     
+                elif jogo.qtdTentativasRestantes == 0:
+                    jogador.jogadorVencedor = False
+                    palavraAnimacao = jogo.animacao_palavra_secreta()
+                    
                 data = {        
                     "status" : 200,
                     "message" : feedback,
-                    "remaining_attemps" : jogo.qtdTentativasRestantes
+                    "remaining_attemps" : jogo.qtdTentativasRestantes,
+                    "word_animation" : palavraAnimacao if palavraAnimacao else None
                 }
                 
         response = json.dumps(data)

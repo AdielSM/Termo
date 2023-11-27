@@ -10,3 +10,5 @@
 [ ] Levar pilha de palavras repetidas para o cliente tratar
 
 [ ] Tratar animação secreta no cliente
+
+[ ] Transformar listTermoError em um dicionário, além de atualizar o return de checkWord na classe Termo

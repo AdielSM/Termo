@@ -46,7 +46,7 @@ class Termo:
 
     @property
     def dictPalavra(self) -> Dict[str, List[int]]:
-        return self.__dictPalavra
+        return self.__dictPalavra.copy()
 
     @property
     def qtdTentativasRestantes(self) -> int:
@@ -111,7 +111,7 @@ class Termo:
         
 
     # é necessário fazer a lógica do print da animação no cliente ou no servidor (possivelmente no cliente)
-    def __animacao_palavra_secreta(self):
+    def animacao_palavra_secreta(self):
         palavra_transformada = ['_' for _ in self.__palavra]
         animacao = []
         
@@ -121,5 +121,6 @@ class Termo:
             palavra_transformada[i] = self.__palavra[i]
             animacao.append(''.join(palavra_transformada))
         
-        return ' '.join(animacao)
+        return animacao
+
 

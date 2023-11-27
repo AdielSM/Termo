@@ -1,6 +1,8 @@
 import socket
 import json
 
+from time import sleep
+
 from utils.server_config import config_server
 
 from prettytable import PrettyTable
@@ -91,18 +93,34 @@ while True:
                     break
                 
                 else:
-                    palavra = ''
-                    for index,itens in enumerate(response_message):
-                        if itens == "green":
-                            palavra += "\033[92m" + parametro[index] + "\033[0m"
-                        elif itens == "yellow":
-                            palavra += "\033[93m" + parametro[index] + "\033[0m"
-                        else:
-                            palavra += "\033[90m" + parametro[index] + "\033[0m"
-                    print(palavra)
-                    print('Tentativas Restantes:',tentativas)
-                    print('')
-                    continue
+                    
+                    if tentativas == 0:
+                        saida = response_data["word_animation"]
+                        print(saida[0])
+                        
+                        for i in range(1,len(saida)):
+                            
+                            letra =  "\033[92m" + saida[i] + "\033[0m"
+                            
+                            if i == len(saida)-1:
+                                print(letra,end="")
+                            else:
+                                print(letra)
+                                sleep(1)
+                        break
+                    
+                    else:
+                        palavra = ''
+                        for index,itens in enumerate(response_message):
+                            if itens == "green":
+                                palavra += "\033[92m" + parametro[index] + "\033[0m"
+                            elif itens == "yellow":
+                                palavra += "\033[93m" + parametro[index] + "\033[0m"
+                            else:
+                                palavra += "\033[90m" + parametro[index] + "\033[0m"
+                        print(palavra)
+                        print('Tentativas Restantes:',tentativas)
+                        print('')
 
 
     #*Colocar raises em validações ao longo do código da classe
