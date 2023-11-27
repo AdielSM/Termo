@@ -1,9 +1,14 @@
 
 *!!! -> [X] Terminar a implementação do servidor com a classe Jogador, além de corrigir a lógica dos jogadores ativos.*
 
+**[ ] Fazer uma nova feature para permitir que o jogador possa escolher entre jogar novamente ou sair do jogo.**
+
+**[ ] Fazer uma nova feature para permitir que o jogador crie uma party e convide outros jogadores para jogar com ele. Fazer com que o servidor gerencie e faça uma competição entre eles.**
+
 [ ] Corrigir parâmetro jogador para de fato armazenar o jogador da Thread, retirando for em jogadorAtivo
 [ ] Melhorar checagem de jogo ativo antes de perguntar por palavra em check_word
 
+[ ] Reeimplementar a lógica de animação da palavra no cliente
 
 [ ] Colocar sobre o Ambiente Virtual no readMe
 
