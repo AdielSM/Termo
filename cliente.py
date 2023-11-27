@@ -83,7 +83,7 @@ while True:
                 
                 tentativas = response_data["remaining_attemps"]
                 
-                if response_message == "+ACERTOU":
+                if response_message == "Palavra Correta.":
                     print('Parabéns! Você conseguiu acertar a palavra!')
                     print('Suas Tentativas Restantes:',tentativas)
                     print('')

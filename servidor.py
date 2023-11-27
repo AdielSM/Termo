@@ -30,25 +30,29 @@ def removerJogadorAtivo(cliente):
             return
         
 
-
 def handle_client(con, cliente):
     jogador = None
     while True:
         msg = con.recv(TAM_MSG)
         if not msg: break
-        processa_msg_cliente(msg, con, cliente, jogador)
+        processa_msg_cliente(msg, con, cliente)
     con.close()
     
     
-def processa_msg_cliente(msg, con, cliente, jogador:Jogador|None):
+def processa_msg_cliente(msg, con, cliente):
     data = json.loads(msg.decode())  
 
+    print(f'Conectei com', con, cliente, data)
+    
     comando = data.get('comando').lower()
     parametro = data.get('parametro')
+    
+    jogadorAtual = None
     
     for jogador in jogadoresAtivos:
         if jogador.cliente == cliente:
             jogo = jogador.jogo
+            jogadorAtual = jogador
             break
     else:
         jogo = None
@@ -56,7 +60,7 @@ def processa_msg_cliente(msg, con, cliente, jogador:Jogador|None):
     # Inicia um jogador com o seu jogo
     if comando == '/game/start':
         
-        if jogador in jogadoresAtivos:  
+        if jogadorAtual in jogadoresAtivos:  
             data = {
                 "status": 400,
                 "message": "Já existe um jogo iniciado"
@@ -65,7 +69,7 @@ def processa_msg_cliente(msg, con, cliente, jogador:Jogador|None):
         else:
             try:
                 # Iniciar jogador
-                jogador = criarJogadorAtivo(cliente, con)
+                jogadorAtual = criarJogadorAtivo(cliente, con)
                     
                 data = {
                     "status": 200,
@@ -83,7 +87,7 @@ def processa_msg_cliente(msg, con, cliente, jogador:Jogador|None):
                 
     # Encerra a conexão com o servidor
     elif comando == '/game/exit':
-        if jogador not in jogadoresAtivos:
+        if jogadorAtual not in jogadoresAtivos:
             data = {
                 "status" : 400,
                 "message" : "Não existe nenhum jogo iniciado."
