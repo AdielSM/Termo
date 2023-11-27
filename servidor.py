@@ -15,18 +15,36 @@ TAM_MSG, PORT = config_server()
 jogadoresAtivos = []
 jogadoresAtivos_lock = Lock()
 
-def handle_client(con, cliente):
+def criarJogadorAtivo(cliente, con) -> Jogador:
+    jogador = Jogador(cliente, con)
+    jogador.jogadorAtivo = True
+    jogador.jogo = Termo()                
     
+    with jogadoresAtivos_lock: jogadoresAtivos.append(jogador)
+
+    return jogador
+
+def removerJogadorAtivo(cliente):
+    for jogador in jogadoresAtivos:
+        if jogador.cliente == cliente:
+            with jogadoresAtivos_lock: jogadoresAtivos.remove(jogador)
+            jogador.jogadorAtivo = False
+            return
+        
+
+
+def handle_client(con, cliente):
+    jogador = None
     while True:
         msg = con.recv(TAM_MSG)
         if not msg: break
-        processa_msg_cliente(msg, con, cliente)
+        processa_msg_cliente(msg, con, cliente, jogador)
     con.close()
     
     
-def processa_msg_cliente(msg, con, cliente):
+def processa_msg_cliente(msg, con, cliente, jogador:Jogador|None):
     data = json.loads(msg.decode())  
-    
+
     comando = data.get('comando').lower()
     parametro = data.get('parametro')
     
@@ -34,27 +52,22 @@ def processa_msg_cliente(msg, con, cliente):
         if jogador.cliente == cliente:
             jogo = jogador.jogo
             break
-    
     else:
         jogo = None
     
-
+    # Inicia um jogador com o seu jogo
     if comando == '/game/start':
         
-        if cliente in jogadoresAtivos:  
+        if jogador in jogadoresAtivos:  
             data = {
                 "status": 400,
                 "message": "Já existe um jogo iniciado"
             }
             
         else:
-            try:    
-                jogador = Jogador(cliente, con)
-                jogador.jogadorAtivo = True
-                jogador.jogo = Termo()                
-                
-                with jogadoresAtivos_lock:
-                    jogadoresAtivos.append(cliente)
+            try:
+                # Iniciar jogador
+                jogador = criarJogadorAtivo(cliente, con)
                     
                 data = {
                     "status": 200,
@@ -71,8 +84,8 @@ def processa_msg_cliente(msg, con, cliente):
         con.send(response.encode())
                 
     # Encerra a conexão com o servidor
-    elif comando.upper() == '/game/exit':
-        if cliente not in jogadoresAtivos:
+    elif comando == '/game/exit':
+        if jogador not in jogadoresAtivos:
             data = {
                 "status" : 400,
                 "message" : "Não existe nenhum jogo iniciado."
@@ -80,14 +93,7 @@ def processa_msg_cliente(msg, con, cliente):
             
         else:
             try:
-                for jogador in jogadoresAtivos:
-                        
-                        if jogador.cliente == cliente:
-                            with jogadoresAtivos_lock:
-                                jogadoresAtivos.remove(jogador)
-                                jogador.jogadorAtivo = False
-                                break
-                            
+                removerJogadorAtivo(cliente)                            
                 data = {
                     "status" : 200,
                     "message" : "Jogo encerrado"
@@ -103,7 +109,7 @@ def processa_msg_cliente(msg, con, cliente):
         con.send(response.encode())
                 
     # Verifica a situação da palavra enviada pelo player
-    elif comando.upper() == "/game/check_word":
+    elif comando == "/game/check_word":
         
         if not jogo:
             data = {
@@ -147,33 +153,33 @@ def processa_msg_cliente(msg, con, cliente):
             
         
     # Lista os jogadores ativos
-    elif comando.upper() == 'LIST_PLAYERS':
+    elif comando == 'LIST_PLAYERS':
         pass
     
     # Adiciona um jogador à lista de jogadores ativos, poderia ser um comando alternativo para o GetGame ?
-    # elif comando.upper() == 'ADD_PLAYER':
+    # elif comando == 'ADD_PLAYER':
     #     with jogadoresAtivos_lock:
     #         jogador = (cliente[0], cliente[1])
     #         jogadoresAtivos.append(jogador)
     #     con.send(str.encode(f'+OK{SEPARADOR}'))
     
     # Remove um jogador da lista de jogadores ativos forçadamente
-    elif comando.upper() == 'REMOVE_PLAYER':
+    elif comando == 'REMOVE_PLAYER':
         pass
         
     # Lista as partidas em andamento
-    elif comando.upper() == 'LIST_GAMES':
+    elif comando == 'LIST_GAMES':
         pass
     
     # Lista as palavras que estão sendo usadas no momento e em qual partida
-    elif comando.upper() == 'LIST_WORDS':
+    elif comando == 'LIST_WORDS':
         pass
         
     # daria para fazer um jogador jogador novamente, e caso o jogador continuasse, armazenasse a quantidade de palavras que ele acertou naquela sessão?
-    elif comando.upper() == 'LIST_SCORE':
+    elif comando == 'LIST_SCORE':
         pass
     
-    elif comando.upper() == 'ADD_SCORE':
+    elif comando == 'ADD_SCORE':
         pass
     
     else:

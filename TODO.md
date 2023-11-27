@@ -1,5 +1,8 @@
 
-*!!! -> [ ] Terminar a implementação do servidor com a classe Jogador, além de corrigir a lógica dos jogadores ativos.*
+*!!! -> [X] Terminar a implementação do servidor com a classe Jogador, além de corrigir a lógica dos jogadores ativos.*
+
+[ ] Corrigir parâmetro jogador para de fato armazenar o jogador da Thread, retirando for em jogadorAtivo
+[ ] Melhorar checagem de jogo ativo antes de perguntar por palavra em check_word
 
 
 [X] Atualizar o protocolo!!!

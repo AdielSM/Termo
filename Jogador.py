@@ -1,3 +1,5 @@
+from termo import Termo
+
 class Jogador:
     def __init__(self, cliente: str, con: str):
         self.__cliente = cliente
@@ -48,11 +50,11 @@ class Jogador:
         self.__jogadorVencedor = jogadorVencedor
         
     @property
-    def jogo(self) -> str:
+    def jogo(self) -> Termo:
         return self.__jogo
     
     @jogo.setter
-    def jogo(self, jogo: str):
+    def jogo(self, jogo: Termo):
         self.__jogo = jogo
 
     def addPontuacao(self):
