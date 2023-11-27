@@ -1,8 +1,7 @@
 from typing import List, Dict, Union
 from enum import Enum
 
-from Estruturas.pilhaSequencial import PilhaSequencial
-from Estruturas.AVLtree import AVLTree
+from Estruturas import AVLtree, PilhaSequencial
 
 class Estado(Enum):
     Sem_jogo = 1
@@ -14,8 +13,7 @@ class Estado(Enum):
     Vitoria = 6
 
 class Termo:
-    bancoPalavras: AVLTree = AVLTree()
-    
+    bancoPalavras: AVLtree = AVLtree()
     
     @staticmethod
     def __carregarPalavras():
@@ -82,7 +80,7 @@ class Termo:
 
         if palavra == self.__palavra:
             self.__estadoDoJogo = Estado.Vitoria
-            return "+ACERTOU"
+            return "Palavra Correta."
         
         # A ser tratado no cliente
         elif self.__pilhaPalavras.verifica_elemento(palavra):
@@ -125,12 +123,3 @@ class Termo:
         
         return ' '.join(animacao)
 
-#* Para testes internos
-# if __name__ == '__main__':
-#     jogo = Termo()
-#     print(jogo.palavra)
-#     print(jogo.dictPalavra)
-#     print(jogo.checkPalavra('wertyu'))
-#     print(jogo.checkPalavra('banana'))
-#     print(jogo.checkPalavra('desejo'))
-#     # jogo.getPalavras()

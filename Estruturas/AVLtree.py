@@ -8,7 +8,7 @@ class Node:
         self.left: Optional[Node] = None
         self.right: Optional[Node] = None
 
-class AVLTree:
+class AVLtree:
     def __init__(self):
         self.__root: Optional[Node] = None
         self.__list: List[str] = []
