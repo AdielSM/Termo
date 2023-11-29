@@ -2,30 +2,39 @@
 Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 
 ## Resposta:
-200 OK
+200 <span style="color:lightblue"> (Jogo Iniciado) </span>
 ```json
 {
-    "message": "Jogo iniciado"
+    "message": "200"
 }
 ```
 
-400 Bad Request
+400  <span style="color:lightblue"> (Jogo já iniciado) </span>
 ```json
 {
-    "error": "mensagem de erro"
+    "message": "400"
 }
 ```
+
 
 # GET /game/exit
 Solicita que o jogo atual se encerre
 
 ## Resposta:
-200 OK
+201 <span style="color:lightblue"> (Jogo Encerrado) </span>
 ```json
 {
-    "message": "O jogo é encerrado."
+    "message": "201"
 }
 ```
+
+401  <span style="color:lightblue"> (Jogo não iniciado) </span>
+```json
+{
+    "message": "401"
+}
+```
+
 
 # POST /game/check-word
 Envia uma palavra para validação no lado do servidor (checando se acertou)
@@ -38,56 +47,97 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 ```
 
 ## Resposta:
-200 OK
+202 <span style="color:lightblue"> (Palavra Correta) </span>
 ```json
 {
-    "status": "+ACERTOU",
-    "attempts": "quantidades de tentativas anteriores"
+    "message": "202"
+    "attempts": "quantidade de tentativas restantes"
 }
 ```
 
-200 OK
+203 <span style="color:lightblue"> (Palavra Incorreta) </span>
+
+### Código das cores:
+#### - 0: cinza 
+#### - 1: amarelo
+#### - 2: verde
+
 ```json
 {
-    "status": "+ERROU",
+    "message": "203",
+
+
     "feedback": [
         {
             "index": 0,
-            "modification": "green",
+            "modification": "2" // verde,
         },
         {
             "index": 1,
-            "modification": "yellow",
+            "modification": "1" // amarelo,
         },
         {
             "index": 2,
-            "modification": "yellow",
+            "modification": "1" // amarelo,
         },
         {
             "index": 4,
-            "modification": "green",
+            "modification": "0" // cinza,
         }
     ],
+
+
     "remaining_attempts": "quantidade de tentativas restantes"
 
 }
 ```
 
-200 OK
+401  <span style="color:lightblue"> (Jogo não iniciado) </span>
 ```json
 {
-    "status": "+SEM_TENTATIVAS"
+    "message": 401 // "Jogo não iniciado.
 }
 ```
 
-### Mensagem de erro:
-Serve para indicar que o usuário tentou enviar uma palavra inválida (não é uma palavra, já foi enviada, etc)
-
-400 Bad Request
+402 <span style="color:lightblue"> (Necessário Parâmetro) </span>
 ```json
-{   
-    "status": 400
-    "error": "mensagem de erro"
-    "remaining_attempts": "quantidade de tentativas restantes
+{
+    "message": 402 // "Necessário Parâmetro.
+    "remaining_attempts": "quantidade de tentativas restantes"
+}
+```
+
+403  <span style="color:lightblue"> (Tamanho Incorreto) </span>
+```json
+{
+    "message": 403 // "Tamanho Incorreto.
+    "remaining_attempts": "quantidade de tentativas restantes"
+}
+```
+
+404  <span style="color:lightblue"> (Palavra Inexistente) </span>
+```json
+{
+    "message": 404 // "Palavra Inexistente.
+    "remaining_attempts": "quantidade de tentativas restantes"
+}
+```
+
+405  <span style="color:lightblue"> (Palavra Repetida) </span>
+```json
+{
+    "message": 405 // "Palavra Repetida.
+    "remaining_attempts": "quantidade de tentativas restantes"
+}
+```
+
+
+# BAD REQUEST
+
+499  <span style="color:lightblue"> (Requisição Inválida) </span>
+```json
+{
+    "message": 499 // "Requisição Inválida.
+    "remaining_attempts": "quantidade de tentativas restantes"
 }
 ```
