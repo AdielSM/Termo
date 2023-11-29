@@ -1,4 +1,7 @@
 
+*!!! -> [ ] Resolver problemas de importação de módulos no servidor e no termo.*
+
+
 *!!! -> [X] Terminar a implementação do servidor com a classe Jogador, além de corrigir a lógica dos jogadores ativos.*
 
 *!!! -> [ ]Terminar a implementação da nova dinâmica de código do protocolo no servidor e no cliente.*
