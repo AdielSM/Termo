@@ -1,4 +1,4 @@
-def config_server():
+def server_config():
     try: 
         with open('./utils/server.config', 'r') as arquivo:
             TAM_MSG = int(arquivo.readline().split('=')[1]) or 1024
