@@ -1,9 +1,12 @@
 from termo import Termo
 from jogador import Jogador
 
-from utils import  busca_chave_por_valor
-from .utils import config_server
-from .utils import sumario_protocolo
+import sys
+sys.path.append('c:/Users/adiel/OneDrive/Termo')
+
+from utils.sumario_protocolo import sumario_protocolo
+from utils.server_config import server_config
+
 
 import socket
 import json
@@ -12,7 +15,7 @@ from threading import Thread, Lock
 
 
 HOST = '0.0.0.0'
-TAM_MSG, PORT = config_server()
+TAM_MSG, PORT = server_config()
 
 sumario_protocolo = sumario_protocolo()
 
@@ -58,20 +61,20 @@ def processa_msg_cliente(msg, con, cliente):
     
 
     jogadorAtual = None
-    jogo = None
+    termo = None
     
     for jogador in jogadoresAtivos:
         if jogador.cliente == cliente:
-            jogo = jogador.jogo
+            termo = jogador.jogo
             jogadorAtual = jogador
             break
 
     # Inicia um jogador com o seu jogo
     if comando == '/game/start':
         
-        if jogadorAtual in jogadoresAtivos:  
+        if jogadorAtual:  
             data = {
-                "message": sumario_protocolo['JOGO_JA_INICIADO']
+                "code_status": sumario_protocolo['JOGO_JA_INICIADO']
                 # 400 Jogo já iniciado
             }
             
@@ -80,7 +83,7 @@ def processa_msg_cliente(msg, con, cliente):
             jogadorAtual = criarJogadorAtivo(cliente, con)
                 
             data = {
-                "message": sumario_protocolo['JOGO_INICIADO']
+                "code_status": sumario_protocolo['JOGO_INICIADO']
                 # 200 Jogo Iniciado
             }
                         
@@ -92,13 +95,13 @@ def processa_msg_cliente(msg, con, cliente):
         try:
             removerJogadorAtivo(cliente)                            
             data = {
-                "message" : sumario_protocolo['JOGO_ENCERRADO'],
+                "code_status" : sumario_protocolo['JOGO_ENCERRADO'],
                 # 201 Jogo encerrado
             }
             
         except Exception:
             data = {
-                "message" : sumario_protocolo['JOGO_NAO_INICIADO'],
+                "code_status" : sumario_protocolo['JOGO_NAO_INICIADO'],
                 # 401 Jogo não iniciado
             }
                 
@@ -108,66 +111,44 @@ def processa_msg_cliente(msg, con, cliente):
     # Verifica a situação da palavra enviada pelo player
     elif comando == "/game/check_word":
         
-        if not jogo:
+        if not termo:
             data = {
-                "message" : sumario_protocolo['JOGO_NAO_INICIADO'],
+                "code_status" : sumario_protocolo['JOGO_NAO_INICIADO'],
                 # 401 Jogo não iniciado
             }
             
         elif not parametro:
             data = {
-                "message" : sumario_protocolo['NECESSARIO_PARAMETRO'],
+                "code_status" : sumario_protocolo['NECESSARIO_PARAMETRO'],
+                # 402 Necessário parâmetro
             }
             
         else:
-            feedback = jogo.checkWord(parametro)
-            
+            feedback = termo.checkWord(parametro)
             
             if feedback.isinstance(int):
                 
-                feedback = busca_chave_por_valor(sumario_protocolo,feedback)
-                
+                if feedback == 202:
+                    jogadorAtual.addPontuacao()
+                    jogadorAtual.jogadorVencedor = True
+                    
                 data = {
-                    "message" : sumario_protocolo[feedback],
-                    "remaining_attemps" : jogo.qtdTentativasRestantes
+                    "code_status" : feedback, # 202 Palavra Correta
+                    "remaining_attemps" : termo.qtdTentativasRestantes
                 }
             
             else:
-                ...
+                
+                data = {
+                    "code_status" : sumario_protocolo['PALAVRA_INCORRETA'], # 203 Palavra Incorreta
+                    "feedback" : feedback, # Lista com números para tradução no cliente
+                    "remaining_attemps" : termo.qtdTentativasRestantes
+                }
             
-            # listTermoError = ["Palavra Repetida","Tamanho Incorreto","Palavra Inexistente"]
-            
-            # if feedback in listTermoError:
-            #     data = {
-            #         "status" : 400,
-            #         "message" : feedback,
-            #         "remaining_attemps" : jogo.qtdTentativasRestantes
-            #     }
-                
-            # else:
-                
-            #     palavraAnimacao = None
-                
-            #     if feedback == "Palavra Correta.":
-            #         jogador.pontuacao += 1
-            #         jogador.jogadorVencedor = True
-                    
-            #     elif jogo.qtdTentativasRestantes == 0:
-            #         jogador.jogadorVencedor = False
-            #         palavraAnimacao = jogo.animacao_palavra_secreta()
-                    
-            #     data = {        
-            #         "status" : 200,
-            #         "message" : feedback,
-            #         "remaining_attemps" : jogo.qtdTentativasRestantes,
-            #         "word_animation" : palavraAnimacao if palavraAnimacao else None
-            #     }
-                
         response = json.dumps(data)
         con.send(response.encode())
     
-            
-        
+
     # Lista os jogadores ativos
     elif comando == 'LIST_PLAYERS':
         pass
@@ -188,22 +169,21 @@ def processa_msg_cliente(msg, con, cliente):
         pass
     
     else:
-        if jogo:
+        if termo:
             data = {
-                "message" : sumario_protocolo['COMANDO_INVALIDO'],
-                "remaining_attemps" : jogo.qtdTentativasRestantes
+                "code_status" : sumario_protocolo['COMANDO_INVALIDO'],
+                "remaining_attemps" : termo.qtdTentativasRestantes
             }
             # 499 Comando inválido
         else:
             data = {
-                "message" : sumario_protocolo['COMANDO_INVALIDO']
+                "code_status" : sumario_protocolo['COMANDO_INVALIDO']
             }
             # 499 Comando inválido
         
         response = json.dumps(data)
         con.send(response.encode())
-    
-    return True
+
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind((HOST, PORT))
