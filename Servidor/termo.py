@@ -1,7 +1,7 @@
 from typing import List, Dict, Union
 from enum import Enum
 
-from Estruturas import AVLtree, PilhaSequencial
+from Estruturas import AVLtree, PilhaSequencial 
 
 class Estado(Enum):
     Sem_jogo = 1
@@ -13,7 +13,7 @@ class Estado(Enum):
     Vitoria = 6
 
 class Termo:
-    bancoPalavras: AVLtree[str] = AVLtree[str]()
+    bancoPalavras: AVLtree = AVLtree()
     
     @staticmethod
     def __carregarPalavras() -> None:
@@ -27,7 +27,7 @@ class Termo:
         Termo.__carregarPalavras()  # Carrega as palavras, se ainda não foram carregadas
 
         self.__qtdTentativasRestantes: int = qtdTentativas
-        self.__pilhaPalavras: PilhaSequencial[str] = PilhaSequencial[str](qtdTentativas)
+        self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo: Estado = Estado.Sem_jogo
 
         self.iniciarJogo(qtdTentativas)
@@ -36,7 +36,7 @@ class Termo:
         self.__palavra: str = self.__escolherPalavraAleatoria()
         self.__dictPalavra: Dict[str, List[int]] = self.__criarDictPalavra(self.__palavra)
         self.__qtdTentativasRestantes: int = qtdTentativas
-        self.__pilhaPalavras: PilhaSequencial[str] = PilhaSequencial[str](qtdTentativas)
+        self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo: Estado = Estado.Jogo_com_tentativa
         
 
@@ -122,3 +122,9 @@ class Termo:
             animacao.append(''.join(palavra_transformada))
         
         return animacao
+    
+    
+if __name__ == '__main__':
+    termo = Termo()
+    print(termo.dictPalavra)
+    
