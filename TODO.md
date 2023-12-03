@@ -1,8 +1,13 @@
-*[] Transformar o path no servidor e cliente para algo que funcione em qualquer SO*
 
-*!!! -> [] Terminar a implementação do servidor com a classe Jogador, além de corrigir a lógica dos jogadores ativos.*
+!!!---- [] Corrigir problemas de import para ontem ------!!!
 
-*!!! -> [ ]Terminar a implementação da nova dinâmica de código do protocolo no servidor e no cliente.*
+*[] colocar a mudança da cor da string passada em um arquivo diferente*
+
+*[] Modificar a estrutura atual colocando a Pilha em utils* 
+
+*!!! -> [X] Terminar a implementação do servidor com a classe Jogador, além de corrigir a lógica dos jogadores ativos.*
+
+*!!! -> [X]Terminar a implementação da nova dinâmica de código do protocolo no servidor e no cliente.*
 
 **[ ] Fazer uma nova feature para permitir que o jogador possa escolher entre jogar novamente ou sair do jogo.**
 
