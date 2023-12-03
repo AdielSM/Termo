@@ -15,6 +15,3 @@ def sumario_protocolo():
     except Exception as e:
         print(f"Ocorreu um erro: {e}")
                 
-                
-print(sumario_protocolo())
-    

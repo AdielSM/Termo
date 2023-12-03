@@ -1,4 +1,4 @@
-*[] Transformar o path no servidor para algo que funcione em qualquer SO*
+*[] Transformar o path no servidor e cliente para algo que funcione em qualquer SO*
 
 *!!! -> [] Terminar a implementação do servidor com a classe Jogador, além de corrigir a lógica dos jogadores ativos.*
 
