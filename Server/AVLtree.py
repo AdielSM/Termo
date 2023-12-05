@@ -114,18 +114,18 @@ class AVLtree:
             
 
     def is_present(self, key: str) -> bool:
-        return self.search(self.__root, key) is not None
+        return self.__search(self.__root, key) is not None
 
     def search(self, key: str) -> Optional[Node]:
-        return self.search(self.__root, key)
+        return self.__search(self.__root, key)
     
     def __search(self, root: Node, key: str) -> Optional[Node]:
         if not root or root.key == key:
             return root
 
         if key < root.key:
-            return self.search(root.left, key)
-        return self.search(root.right, key)
+            return self.__search(root.left, key)
+        return self.__search(root.right, key)
         
     def add_elements(self, lst: List[str]) -> None:
         for _, item in enumerate(lst):
