@@ -45,7 +45,7 @@ Solicita que o jogo atual se encerre
 ```
 
 
-# POST check-word
+# check-word
 Envia uma palavra para validação no lado do servidor (checando se acertou)
 
 ## Requisição:
@@ -60,16 +60,16 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 ```json
 {
     "message": "202",
-    "attempts": "quantidade de tentativas restantes"
+    "attempts": quantidade de tentativas restantes
 }
 ```
 
 203 <span style="color:lightblue"> (Palavra Incorreta) </span>
 
 ### Código das cores:
-#### - 0: cinza 
-#### - 1: amarelo
-#### - 2: verde
+ - 0: cinza 
+ - 1: amarelo
+ - 2: verde
 
 ```json
 {
@@ -96,7 +96,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
     ],
 
 
-    "remaining_attempts": "quantidade de tentativas restantes"
+    "remaining_attempts": quantidade de tentativas restantes
 
 }
 ```
@@ -111,36 +111,36 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 402 <span style="color:lightblue"> (Necessário Parâmetro) </span>
 ```json
 {
-    "message": 402 // "Necessário Parâmetro.
-    "remaining_attempts": "quantidade de tentativas restantes"
+    "message": 402, // "Necessário Parâmetro.
+    "remaining_attempts": quantidade de tentativas restantes
 }
 ```
 
 403  <span style="color:lightblue"> (Tamanho Incorreto) </span>
 ```json
 {
-    "message": 403 // "Tamanho Incorreto.
-    "remaining_attempts": "quantidade de tentativas restantes"
+    "message": 403, // "Tamanho Incorreto.
+    "remaining_attempts": quantidade de tentativas restantes
 }
 ```
 
 404  <span style="color:lightblue"> (Palavra Inexistente) </span>
 ```json
 {
-    "message": 404 // "Palavra Inexistente.
-    "remaining_attempts": "quantidade de tentativas restantes"
+    "message": 404, // "Palavra Inexistente.
+    "remaining_attempts": quantidade de tentativas restantes
 }
 ```
 
 405  <span style="color:lightblue"> (Palavra Repetida) </span>
 ```json
 {
-    "message": 405 // "Palavra Repetida.
-    "remaining_attempts": "quantidade de tentativas restantes"
+    "message": 405, // "Palavra Repetida.
+    "remaining_attempts": quantidade de tentativas restantes
 }
 ```
 
-# GET list_words
+# list_words
 
 ## Resposta:
 
@@ -159,7 +159,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 499  <span style="color:lightblue"> (Requisição Inválida) </span>
 ```json
 {
-    "message": 499 // "Requisição Inválida.
-    "remaining_attempts": "quantidade de tentativas restantes"
+    "message": 499, // "Requisição Inválida.
+    "remaining_attempts": quantidade de tentativas restantes
 }
 ```
