@@ -3,7 +3,7 @@ from utils import PilhaSequencial
 
 pilhaPalavras = PilhaSequencial()
 
-def process_data(data, format_output = None, **kwargs) -> str:
+def render_response(data, format_output = None, **kwargs):
     
     remaining_attemps = kwargs.get("remaining_attemps")
     if remaining_attemps:

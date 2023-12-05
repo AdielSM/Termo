@@ -4,7 +4,7 @@ import json
 from enum import Enum
 from utils import server_config
 
-from Client import process_data, format_output
+from Client import render_response, format_output
 
 from prettytable import PrettyTable
 
@@ -107,21 +107,21 @@ while True:
         
         # Jogo iniciado
         if response_status == 200:
-            process_data(response_status, remaining_attemps=remaining_attemps)
+            render_response(response_status, remaining_attemps=remaining_attemps)
             estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
 
         # Jogo encerrado
         elif response_status == 201:
-            process_data(response_status, remaining_attemps=remaining_attemps)
+            render_response(response_status, remaining_attemps=remaining_attemps)
             estadoDoJogo = EstadoDoJogo.Sem_jogo
 
         # Jogo não iniciado
         elif response_status == 401:
-            process_data(response_status, remaining_attemps=remaining_attemps)
+            render_response(response_status, remaining_attemps=remaining_attemps)
         
         # Palavra correta
         elif response_status == 202:
-            response_message = process_data(response_status, remaining_attemps=remaining_attemps)
+            render_response(response_status, remaining_attemps=remaining_attemps)
             if checkEndGame(): break
 
         # Palavra incorreta
@@ -129,13 +129,13 @@ while True:
             color_str = format_output(parametro, response_data["word_encoded"])
             
             if remaining_attemps != 0:
-                process_data(response_status, color_str, remaining_attemps=remaining_attemps)
+                render_response(response_status, color_str, remaining_attemps=remaining_attemps)
             else:
-                process_data(response_status, color_str, secret_word=response_data["secret_word"], remaining_attemps=remaining_attemps)
+                render_response(response_status, color_str, secret_word=response_data["secret_word"], remaining_attemps=remaining_attemps)
                 if checkEndGame(): break
                 
         else:
-            response_message = process_data(response_status, remaining_attemps=remaining_attemps)
+            render_response(response_status, remaining_attemps=remaining_attemps)
 
 
     #*Colocar raises em validações ao longo do código da classe
