@@ -1,6 +1,7 @@
 import socket
 import json
 
+from enum import Enum
 from utils import server_config
 
 from Client import process_data, format_output
@@ -13,15 +14,27 @@ TAM_MSG, PORT = server_config()
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((HOST, PORT))
 
-def tableOptions():
-    table = PrettyTable()
+class EstadoDoJogo(Enum):
+    Sem_jogo = 1
+    Jogo_em_andamento = 2
+    Jogo_finalizado = 3
+
+table = PrettyTable()
+estadoDoJogo = EstadoDoJogo.Sem_jogo
+
+def renderTable():
+    table.clear_rows()
     table.field_names = ["Opção", "Descrição"]
     table.add_row(["1", "Começar um jogo"])
     table.add_row(["2", "Sair do jogo atual"])
-    table.add_row(["3", "Checar palavra"])
-    table.add_row(["4", "Listar palavras do Termo"])
+
+    if not estadoDoJogo == EstadoDoJogo.Sem_jogo:
+        table.add_row(["3", "Checar palavra"])
+        table.add_row(["4", "Listar palavras digitadas nessa rodada"])
+
     table.align["Opção"] = "l"
     table.align["Descrição"] = "l"
+
     print('')
     print(table)
     print('')
@@ -35,12 +48,12 @@ def proccessUserCommand(comando_usuario:str)->tuple:
         comando = "exit"
         parametro = None
     
-    elif comando_usuario == '3':
+    elif comando_usuario == '3' and estadoDoJogo == EstadoDoJogo.Jogo_em_andamento:
         comando = "check_word"
         comando_usuario = input('Digite a palavra: ')
         parametro = comando_usuario.lower()
         
-    elif comando_usuario == '4':
+    elif comando_usuario == '4' and estadoDoJogo == EstadoDoJogo.Jogo_em_andamento:
         comando = "list_words"
         parametro = None
     
@@ -49,11 +62,31 @@ def proccessUserCommand(comando_usuario:str)->tuple:
 
     return (comando, parametro)
 
+def checkEndGame() -> bool:
+    global estadoDoJogo
+    estadoDoJogo = EstadoDoJogo.Jogo_finalizado
 
+    print('')
+    print('A rodada acabou!')
+    print('Deseja continuar jogando?')
+    usr_input = input('Digite 1 para continuar ou 2 para sair: ')
+    
+    while usr_input not in ['1','2']:
+        usr_input = input('Digite 1 para continuar ou 2 para sair: ')
+    
+    if usr_input == '1':
+        return False
+    
+    print('')
+    #Todo: Mostrar pontuação, colocar estatísticas
+    print('Obrigado por jogar!')
+    print('Feito com ❤️ em 🐍')
+    return True
 
 while True:
     try:
-        tableOptions()
+        renderTable()
+        print("\033[90mAperte Ctrl + C para encerrar o Termo!\033[0m")
         cmd_usr = input('Termo> ')
 
         comando, parametro = proccessUserCommand(cmd_usr)
@@ -72,36 +105,34 @@ while True:
         response_status =  response_data["code_status"]
         remaining_attemps = response_data.get("remaining_attemps")
         
-        if response_status in [200,201,401]:
+        # Jogo iniciado
+        if response_status == 200:
             process_data(response_status, remaining_attemps=remaining_attemps)
-            
+            estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
+
+        # Jogo encerrado
+        elif response_status == 201:
+            process_data(response_status, remaining_attemps=remaining_attemps)
+            estadoDoJogo = EstadoDoJogo.Sem_jogo
+
+        # Jogo não iniciado
+        elif response_status == 401:
+            process_data(response_status, remaining_attemps=remaining_attemps)
+        
+        # Palavra correta
+        elif response_status == 202:
+            response_message = process_data(response_status, remaining_attemps=remaining_attemps)
+            if checkEndGame(): break
+
+        # Palavra incorreta
         elif response_status == 203:
-            
             color_str = format_output(parametro, response_data["word_encoded"])
-            
             
             if remaining_attemps != 0:
                 process_data(response_status, color_str, remaining_attemps=remaining_attemps)
-            
             else:
                 process_data(response_status, color_str, secret_word=response_data["secret_word"], remaining_attemps=remaining_attemps)
-                
-                print('')
-                print('A rodada acabou!')
-                print('Deseja continuar jogando?')
-                usr_input = input('Digite 1 para continuar ou 2 para sair: ')
-                
-                while usr_input not in ['1','2']:
-                    usr_input = input('Digite 1 para continuar ou 2 para sair: ')
-                
-                if usr_input == '1':
-                    continue
-                
-                print('')
-                #Todo: Mostrar pontuação, colocar estatísticas
-                print('Obrigado por jogar!')
-                print('Feito com ❤️ em 🐍')
-                break 
+                if checkEndGame(): break
                 
         else:
             response_message = process_data(response_status, remaining_attemps=remaining_attemps)

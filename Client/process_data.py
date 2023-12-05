@@ -22,7 +22,9 @@ def process_data(data, format_output = None, **kwargs) -> str:
             
         case 202:
             #toDo melhorar resposta de palavra correta
-            print("Palavra Correta!")
+            print("🏆 Parabéns! Palavra Correta! 😎")
+            print("Lista de Palavras Anteriores:")
+            print(pilhaPalavras)
             print(remaining_attemps)
             
         case 203:
