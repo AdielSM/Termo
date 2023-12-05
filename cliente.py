@@ -74,8 +74,7 @@ def checkEndGame() -> bool:
     while usr_input not in ['1','2']:
         usr_input = input('Digite 1 para continuar ou 2 para sair: ')
     
-    if usr_input == '1':
-        return False
+    if usr_input == '1': return False
     
     print('')
     #Todo: Mostrar pontuação, colocar estatísticas
@@ -115,9 +114,6 @@ while True:
             render_response(response_status, remaining_attemps=remaining_attemps)
             estadoDoJogo = EstadoDoJogo.Sem_jogo
 
-        # Jogo não iniciado
-        elif response_status == 401:
-            render_response(response_status, remaining_attemps=remaining_attemps)
         
         # Palavra correta
         elif response_status == 202:
@@ -134,6 +130,10 @@ while True:
                 render_response(response_status, color_str, secret_word=response_data["secret_word"], remaining_attemps=remaining_attemps)
                 if checkEndGame(): break
                 
+        # Jogo não iniciado
+        elif response_status == 401:
+            render_response(response_status, remaining_attemps=remaining_attemps)
+
         else:
             render_response(response_status, remaining_attemps=remaining_attemps)
 
