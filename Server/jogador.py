@@ -1,4 +1,4 @@
-from termo import Termo
+from .termo import Termo
 
 class Jogador:
     def __init__(self, cliente: str, con: str):
