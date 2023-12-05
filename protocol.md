@@ -1,4 +1,4 @@
-# GET /game/start
+# GET start
 Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 
 ## Resposta:
@@ -17,7 +17,7 @@ Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 ```
 
 
-# GET /game/exit
+# GET exit
 Solicita que o jogo atual se encerre
 
 ## Resposta:
@@ -36,7 +36,7 @@ Solicita que o jogo atual se encerre
 ```
 
 
-# POST /game/check-word
+# POST check-word
 Envia uma palavra para validação no lado do servidor (checando se acertou)
 
 ## Requisição:
@@ -131,6 +131,19 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 }
 ```
 
+# GET list_words
+
+## Resposta:
+
+204 <span style="color:lightblue"> (Lista de Palavras já Digitadas) </span>
+
+```json
+
+{
+    "message": "204" // "Lista de Palavras já digitadas.
+}
+
+```
 
 # BAD REQUEST
 
