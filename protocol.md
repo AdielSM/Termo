@@ -1,4 +1,4 @@
-# GET start
+# start
 Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 
 ## Resposta:
@@ -16,8 +16,17 @@ Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 }
 ```
 
+# restart
+Solicita a continuação com novo jogo
 
-# GET exit
+## Resposta:
+201 <span style="color:lightblue"> (Jogo Reiniciado) </span>
+```json
+{
+    "message": "205"
+}
+
+# exit
 Solicita que o jogo atual se encerre
 
 ## Resposta:
@@ -50,7 +59,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 202 <span style="color:lightblue"> (Palavra Correta) </span>
 ```json
 {
-    "message": "202"
+    "message": "202",
     "attempts": "quantidade de tentativas restantes"
 }
 ```

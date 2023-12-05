@@ -3,6 +3,7 @@ from enum import Enum
 
 from .AVLtree import AVLtree
 from utils import PilhaSequencial
+from .palavrasRepository import carregarPalavras
 
 class Estado(Enum):
     Sem_jogo = 1
@@ -16,17 +17,11 @@ class Estado(Enum):
 class Termo:
     bancoPalavras: AVLtree = AVLtree()
     
-    @staticmethod
-    def __carregarPalavras() -> None:
-        if not Termo.bancoPalavras:  # Verifica se as palavras já foram carregadas
-            with open('repositorioPalavras/bancoDePalavras.txt', 'r') as arquivo:
-                palavras = [palavra.strip().replace('\x00', '') for palavra in arquivo.readlines()]
-                Termo.bancoPalavras.add_elements(palavras)
-                Termo.palavras = palavras  # Armazena as palavras na variável de classe
+    palavras = carregarPalavras()  # Carrega as palavras do palavrasRepository
+    bancoPalavras.add_elements(palavras)
+    del palavras
 
     def __init__(self, qtdTentativas: int = 5) -> None:
-        Termo.__carregarPalavras()  # Carrega as palavras, se ainda não foram carregadas
-
         self.__qtdTentativasRestantes: int = qtdTentativas
         self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo: Estado = Estado.Sem_jogo
@@ -67,7 +62,7 @@ class Termo:
                 dict_palavra[letra].append(i)
         return dict_palavra
 
-    def checkWord(self, palavra: str) -> Union[int, List[int]]:
+    def checkWord(self, palavra: str) -> int | List[int]:
         # Só avança com tentativa
         if not self.__estadoDoJogo == Estado.Jogo_com_tentativa: pass
 

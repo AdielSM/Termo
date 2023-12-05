@@ -62,6 +62,14 @@ def proccessUserCommand(comando_usuario:str)->tuple:
 
     return (comando, parametro)
 
+def sendRequisition(req_body) -> json:
+    json_data = json.dumps(req_body)
+    sock.sendall(json_data.encode())
+    
+    response = sock.recv(TAM_MSG)
+    response_data = json.loads(response)
+    return response_data
+    
 def checkEndGame() -> bool:
     global estadoDoJogo
     estadoDoJogo = EstadoDoJogo.Jogo_finalizado
@@ -74,7 +82,20 @@ def checkEndGame() -> bool:
     while usr_input not in ['1','2']:
         usr_input = input('Digite 1 para continuar ou 2 para sair: ')
     
-    if usr_input == '1': return False
+    # Reinicia com novo jogo pra continuar e retorna False pra indicar continuação
+    if usr_input == '1':
+        req_body = {
+            "comando" : "restart",
+            "parametro" : None
+        }
+
+        response_data = sendRequisition(req_body)
+        response_status = response_data["code_status"]
+        render_response(response_status)
+
+        estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
+
+        return False
     
     print('')
     #Todo: Mostrar pontuação, colocar estatísticas
@@ -90,17 +111,12 @@ while True:
 
         comando, parametro = proccessUserCommand(cmd_usr)
         
-        data = {
+        req_body = {
             "comando" : comando,
             "parametro" : parametro
         }
         
-        json_data = json.dumps(data)
-        sock.sendall(json_data.encode())
-        
-        response = sock.recv(TAM_MSG)
-        response_data = json.loads(response)
-        
+        response_data = sendRequisition(req_body)
         response_status =  response_data["code_status"]
         remaining_attemps = response_data.get("remaining_attemps")
         

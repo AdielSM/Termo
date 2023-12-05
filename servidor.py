@@ -84,6 +84,23 @@ def processa_msg_cliente(msg, con, cliente):
         response = json.dumps(data)
         con.send(response.encode())
                 
+    elif comando == 'restart':
+        try:
+            removerJogadorAtivo(cliente)     
+            jogadorAtual = criarJogadorAtivo(cliente, con)
+            data = {
+                "code_status" : sumario_protocolo['JOGO_REINICIADO'],
+                # 205 Jogo reiniciado
+            }
+            
+        except Exception:
+            data = {
+                "code_status" : sumario_protocolo['JOGO_NAO_INICIADO'],
+                # 401 Jogo não iniciado
+            }
+                
+        response = json.dumps(data)
+        con.send(response.encode())
     # Encerra a conexão com o servidor
     elif comando == "exit":
         try:
