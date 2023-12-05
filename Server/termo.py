@@ -1,7 +1,8 @@
 from typing import List, Dict, Union
 from enum import Enum
 
-from Estruturas import AVLtree, PilhaSequencial 
+from .AVLtree import AVLtree
+from utils import PilhaSequencial
 
 class Estado(Enum):
     Sem_jogo = 1
@@ -18,7 +19,7 @@ class Termo:
     @staticmethod
     def __carregarPalavras() -> None:
         if not Termo.bancoPalavras:  # Verifica se as palavras já foram carregadas
-            with open('.txt/bancoDePalavras.txt', 'r') as arquivo:
+            with open('repositorioPalavras/bancoDePalavras.txt', 'r') as arquivo:
                 palavras = [palavra.strip().replace('\x00', '') for palavra in arquivo.readlines()]
                 Termo.bancoPalavras.add_elements(palavras)
                 Termo.palavras = palavras  # Armazena as palavras na variável de classe
@@ -39,14 +40,9 @@ class Termo:
         self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo: Estado = Estado.Jogo_com_tentativa
         
-
     @property
     def palavra(self) -> str:
         return self.__palavra
-
-    @property
-    def dictPalavra(self) -> Dict[str, List[int]]:
-        return self.__dictPalavra.copy()
 
     @property
     def qtdTentativasRestantes(self) -> int:
@@ -54,9 +50,6 @@ class Termo:
 
     def getPalavrasTermo(self) -> List[str]:
         return Termo.palavrasTermo.inOrder()
-
-    def __str__(self) -> str:
-        return f'{self.__jogador} x {self.__jogador2}'
 
     def jogoNaoIniciado(self) -> bool:
         return self.__estadoDoJogo == Estado.Sem_jogo
@@ -91,7 +84,6 @@ class Termo:
         elif self.__pilhaPalavras.verifica_elemento(palavra):
             return 405
         
-        
         feedback: List[int] = []
         for index, letra in enumerate(palavra):
             if letra in self.__dictPalavra and index in self.__dictPalavra[letra]:
@@ -109,22 +101,4 @@ class Termo:
         
         return feedback
         
-
-    # é necessário fazer a lógica do print da animação no cliente ou no servidor (possivelmente no cliente)
-    def animacao_palavra_secreta(self) -> List[str]:
-        palavra_transformada: List[str] = ['_' for _ in self.__palavra]
-        animacao: List[str] = []
-        
-        animacao.append('Você perdeu! A palavra era:')
-        
-        for i in range(len(self.__palavra)):
-            palavra_transformada[i] = self.__palavra[i]
-            animacao.append(''.join(palavra_transformada))
-        
-        return animacao
-    
-    
-if __name__ == '__main__':
-    termo = Termo()
-    print(termo.dictPalavra)
     
