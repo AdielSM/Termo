@@ -1,6 +1,7 @@
 import socket
 import json
 
+from time import sleep
 from enum import Enum
 from utils import server_config
 
@@ -11,8 +12,17 @@ from prettytable import PrettyTable
 HOST = '127.0.0.1'
 TAM_MSG, PORT = server_config()
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((HOST, PORT))
+def connect_to_server():
+    while True:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((HOST, PORT))
+            return sock
+        except socket.error:
+            print("Erro ao conectar ao servidor. Tentando novamente em 5 segundos.")
+            sleep(5)
+
+sock = connect_to_server()
 
 class EstadoDoJogo(Enum):
     Sem_jogo = 1
