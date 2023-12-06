@@ -53,9 +53,17 @@ def render_response(data, format_output = None, **kwargs):
                 secret_word_animation(kwargs["secret_word"])
                 
         case 204:
-            print('')
             print("Lista de Palavras:")
             print(pilhaPalavras)
+            print(remaining_attemps)
+            
+        case 205:
+            print('Jogo Reiniciado com Sucesso')
+            print(remaining_attemps)
+            
+        case 206:
+            player_name = kwargs['player_name']
+            print(f'Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name} !')
             print(remaining_attemps)
             
         case 400:
@@ -100,4 +108,4 @@ def secret_word_animation(palavra) -> None:
     for i in range(len(palavra)):
         palavra_transformada[i] = palavra[i]
         print(''.join(palavra_transformada))
-        sleep(0.5)
+        sleep(1)
