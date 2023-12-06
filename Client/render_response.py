@@ -4,6 +4,17 @@ from utils import PilhaSequencial
 pilhaPalavras = PilhaSequencial()
 
 def render_response(data, format_output = None, **kwargs):
+    """
+    Função responsável por renderizar a resposta do servidor.
+
+    Parâmetros:
+    - data: O código de resposta do servidor.
+    - format_output: A saída formatada a ser exibida.
+    - **kwargs: Argumentos adicionais.
+
+    Retorna:
+    Nenhum valor de retorno.
+    """
     
     remaining_attemps = kwargs.get("remaining_attemps")
     if remaining_attemps:
