@@ -3,7 +3,7 @@ from enum import Enum
 
 from .AVLtree import AVLtree
 from utils import PilhaSequencial, sumario_protocolo
-from .palavrasRepository import carregarPalavras
+from .palavrasRepositorio import carregarPalavras, carregarPalavrasTermo
 
 class Estado(Enum):
     Sem_jogo = 1
@@ -16,12 +16,17 @@ class Estado(Enum):
 
 class Termo:
     bancoPalavras: AVLtree = AVLtree()
+    bancoPalavrasTermo: AVLtree = AVLtree()
     protocolo = sumario_protocolo()
     
-    palavras = carregarPalavras()  # Carrega as palavras do palavrasRepository
+    palavras = carregarPalavras()  # Carrega as palavras do palavrasRepositorio
     bancoPalavras.add_elements(palavras)
     del palavras
-
+    
+    palavrasTermo = carregarPalavrasTermo()  # Carrega as palavras do palavrasRepositorio
+    bancoPalavrasTermo.add_elements(palavrasTermo)
+    del palavrasTermo
+    
     def __init__(self, qtdTentativas: int = 5) -> None:
         self.__qtdTentativasRestantes: int = qtdTentativas
         self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
@@ -109,7 +114,7 @@ class Termo:
             return Termo.protocolo["TAMANHO_INCORRETO"]
 
         # Verifica se a palavra está presente no banco de palavras
-        elif not Termo.bancoPalavras.is_present(palavra):
+        elif not Termo.bancoPalavras.is_present(palavra) and not Termo.bancoPalavrasTermo.is_present(palavra):
             return Termo.protocolo["PALAVRA_INEXISTENTE"]
 
         # Verifica se a palavra já foi tentada antes
