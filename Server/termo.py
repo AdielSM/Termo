@@ -65,7 +65,7 @@ class Termo:
         return self.__estadoDoJogo == Estado.Sem_jogo
 
     def __escolherPalavraAleatoria(self) -> str:
-        palavra: str = Termo.bancoPalavras.get_random()
+        palavra: str = Termo.bancoPalavrasTermo.get_random()
         return palavra
 
     def __criarDictPalavra(self, palavra: str) -> Dict[str, List[int]]:
