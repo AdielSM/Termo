@@ -9,6 +9,26 @@ class Node:
         self.right: Optional[Node] = None
 
 class AVLtree:
+    
+    """
+    Uma classe que representa uma estrutura de dados de árvore AVL.
+
+    Atributos:
+        __root (Optional[Node]): O nó raiz da árvore AVL.
+        __list (List[str]): Uma lista para armazenar os elementos da árvore AVL.
+
+    Métodos:
+        insert(root: Optional[Node], key: str) -> Node: Insere uma nova chave na árvore AVL.
+        preOrder(): Imprime os elementos da árvore AVL em uma travessia pré-ordem.
+        inOrder(): Imprime os elementos da árvore AVL em uma travessia em ordem.
+        postOrder(): Imprime os elementos da árvore AVL em uma travessia pós-ordem.
+        is_present(key: str) -> bool: Verifica se uma determinada chave está presente na árvore AVL.
+        search(key: str) -> Optional[Node]: Procura por uma determinada chave na árvore AVL e retorna o nó correspondente.
+        add_elements(lst: List[str]) -> None: Adiciona uma lista de elementos à árvore AVL.
+        turn_list() -> List[str]: Retorna uma lista de todos os elementos na árvore AVL.
+        get_random() -> str: Retorna um elemento aleatório da árvore AVL.
+    """
+    
     def __init__(self):
         self.__root: Optional[Node] = None
         self.__list: List[str] = []
@@ -16,15 +36,15 @@ class AVLtree:
     def __len__(self) -> int:
         return len(self.__list)
     
-    def getHeight(self, node: Optional[Node]) -> int:
+    def __getHeight(self, node: Optional[Node]) -> int:
         if not node:
             return 0
         return node.height
 
-    def getBalance(self, node: Optional[Node]) -> int:
+    def __getBalance(self, node: Optional[Node]) -> int:
         if not node:
             return 0
-        return self.getHeight(node.left) - self.getHeight(node.right)
+        return self.__getHeight(node.left) - self.__getHeight(node.right)
 
     def rightRotate(self, y: Node) -> Node:
         x: Node = y.left
@@ -33,8 +53,8 @@ class AVLtree:
         x.right = y
         y.left = T2
 
-        y.height = 1 + max(self.getHeight(y.left), self.getHeight(y.right))
-        x.height = 1 + max(self.getHeight(x.left), self.getHeight(x.right))
+        y.height = 1 + max(self.__getHeight(y.left), self.__getHeight(y.right))
+        x.height = 1 + max(self.__getHeight(x.left), self.__getHeight(x.right))
 
         return x
 
@@ -45,8 +65,8 @@ class AVLtree:
         y.left = x
         x.right = T2
 
-        x.height = 1 + max(self.getHeight(x.left), self.getHeight(x.right))
-        y.height = 1 + max(self.getHeight(y.left), self.getHeight(y.right))
+        x.height = 1 + max(self.__getHeight(x.left), self.__getHeight(x.right))
+        y.height = 1 + max(self.__getHeight(y.left), self.__getHeight(y.right))
 
         return y
 
@@ -62,9 +82,9 @@ class AVLtree:
         else:
             return root  # Ignora chaves duplicadas
 
-        root.height = 1 + max(self.getHeight(root.left), self.getHeight(root.right))
+        root.height = 1 + max(self.__getHeight(root.left), self.__getHeight(root.right))
 
-        balance = self.getBalance(root)
+        balance = self.__getBalance(root)
 
         # Casos de rotação
         if balance > 1:
@@ -82,6 +102,7 @@ class AVLtree:
                 return self.leftRotate(root)
 
         return root
+    
 
     def preOrder(self) -> None:
         self.__preOrder(self.__root)

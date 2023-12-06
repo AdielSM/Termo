@@ -1,6 +1,9 @@
 from .termo import Termo
 
 class Jogador:
+    """
+    Classe que representa um jogador do jogo.
+    """
     def __init__(self, cliente: str, con: str):
         self.__cliente = cliente
         self.__con = con
