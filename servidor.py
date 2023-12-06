@@ -11,7 +11,7 @@ from threading import Thread, Lock
 HOST = '0.0.0.0'
 TAM_MSG, PORT = server_config()
 
-sumario_protocolo = sumario_protocolo()
+protocolo = sumario_protocolo()
 
 jogadoresAtivos = []
 jogadoresAtivos_lock = Lock()
@@ -64,11 +64,11 @@ def processa_msg_cliente(msg, con, cliente):
             break
 
     # Inicia um jogador com o seu jogo
-    if comando == "start":
+    if comando == "start_game":
         
         if jogadorAtual:  
             data = {
-                "code_status": sumario_protocolo['JOGO_JA_INICIADO']
+                "code_status": protocolo['JOGO_JA_INICIADO']
                 # 400 Jogo já iniciado
             }
             
@@ -77,42 +77,59 @@ def processa_msg_cliente(msg, con, cliente):
             jogadorAtual = criarJogadorAtivo(cliente, con)
                 
             data = {
-                "code_status": sumario_protocolo['JOGO_INICIADO']
+                "code_status": protocolo['JOGO_INICIADO']
                 # 200 Jogo Iniciado
             }
                         
         response = json.dumps(data)
         con.send(response.encode())
                 
-    elif comando == 'restart':
+    elif comando == 'restart_game':
         try:
             removerJogadorAtivo(cliente)     
             jogadorAtual = criarJogadorAtivo(cliente, con)
             data = {
-                "code_status" : sumario_protocolo['JOGO_REINICIADO'],
+                "code_status" : protocolo['JOGO_REINICIADO'],
                 # 205 Jogo reiniciado
             }
             
         except Exception:
             data = {
-                "code_status" : sumario_protocolo['JOGO_NAO_INICIADO'],
+                "code_status" : protocolo['JOGO_NAO_INICIADO'],
                 # 401 Jogo não iniciado
             }
-                
+        
+        response = json.dumps(data)
+        con.send(response.encode())
+            
+    elif comando == 'continue_game':
+        if not termo:
+            data = {
+                "code_status" : protocolo['JOGO_NAO_INICIADO'],
+                # 401 Jogo não iniciado
+            }
+        
+        else:
+            jogadorAtual.jogo = Termo()
+            data = {
+                "code_status" : protocolo['JOGO_CONTINUADO'],
+                # 206 Jogo continuado
+            }
+            
         response = json.dumps(data)
         con.send(response.encode())
     # Encerra a conexão com o servidor
-    elif comando == "exit":
+    elif comando == "exit_game":
         try:
             removerJogadorAtivo(cliente)                            
             data = {
-                "code_status" : sumario_protocolo['JOGO_ENCERRADO'],
+                "code_status" : protocolo['JOGO_ENCERRADO'],
                 # 201 Jogo encerrado
             }
             
         except Exception:
             data = {
-                "code_status" : sumario_protocolo['JOGO_NAO_INICIADO'],
+                "code_status" : protocolo['JOGO_NAO_INICIADO'],
                 # 401 Jogo não iniciado
             }
                 
@@ -124,13 +141,13 @@ def processa_msg_cliente(msg, con, cliente):
         
         if not termo:
             data = {
-                "code_status" : sumario_protocolo['JOGO_NAO_INICIADO'],
+                "code_status" : protocolo['JOGO_NAO_INICIADO'],
                 # 401 Jogo não iniciado
             }
             
         elif not parametro:
             data = {
-                "code_status" : sumario_protocolo['NECESSARIO_PARAMETRO'],
+                "code_status" : protocolo['NECESSARIO_PARAMETRO'],
                 # 402 Necessário parâmetro
             }
             
@@ -153,14 +170,14 @@ def processa_msg_cliente(msg, con, cliente):
                 
                 if termo.qtdTentativasRestantes != 0:
                     data = {
-                        "code_status" : sumario_protocolo['PALAVRA_INCORRETA'], # 203 Palavra Incorreta
+                        "code_status" : protocolo['PALAVRA_INCORRETA'], # 203 Palavra Incorreta
                         "word_encoded" : feedback, # Lista com números para tradução no cliente
                         "remaining_attemps" : termo.qtdTentativasRestantes
                     }
                 
                 else:
                     data = {
-                        "code_status" : sumario_protocolo['PALAVRA_INCORRETA'], # 203 Palavra Incorreta
+                        "code_status" : protocolo['PALAVRA_INCORRETA'], # 203 Palavra Incorreta
                         "word_encoded" : feedback, # Lista com números para tradução no cliente
                         "remaining_attemps" : termo.qtdTentativasRestantes,
                         "secret_word" : termo.palavra
@@ -173,13 +190,13 @@ def processa_msg_cliente(msg, con, cliente):
     elif comando == "list_words":
         if not termo:
             data = {
-                "code_status" : sumario_protocolo['JOGO_NAO_INICIADO'],
+                "code_status" : protocolo['JOGO_NAO_INICIADO'],
                 # 401 Jogo não iniciado
             }
         
         else:
             data = {
-                "code_status" : sumario_protocolo['LISTAR_PALAVRAS'],
+                "code_status" : protocolo['LISTAR_PALAVRAS'],
             }
             
         response = json.dumps(data)
@@ -207,13 +224,13 @@ def processa_msg_cliente(msg, con, cliente):
     else:
         if termo:
             data = {
-                "code_status" : sumario_protocolo['COMANDO_INVALIDO'],
+                "code_status" : protocolo['COMANDO_INVALIDO'],
                 "remaining_attemps" : termo.qtdTentativasRestantes
             }
             # 499 Comando inválido
         else:
             data = {
-                "code_status" : sumario_protocolo['COMANDO_INVALIDO']
+                "code_status" : protocolo['COMANDO_INVALIDO']
             }
             # 499 Comando inválido
         
