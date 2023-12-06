@@ -6,11 +6,12 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 
 ## 🔑 Índices
 
-- [Funcionalidades](#⚙️-funcionalidades)
-- [Instalação](#💻-instalação)
-- [Como jogar](#🎮-como-jogar)
-- [Tecnologias](#🚀-tecnologias)
-- [Autores](#👨‍💻-autores)
+- [Funcionalidades](#-funcionalidades)
+- [Instalação](#-instalação)
+- [Como jogar](#-como-jogar)
+- [Tecnologias](#-tecnologias)
+- [Autores](#-autores)
+- [Próximos passos](#-próximos-passos)	
 
 ## ⚙️ Funcionalidades
 - [x] O jogo sorteia uma palavra aleatória de um arquivo de palavras e recebe palavras do usuário até que haja tentativas disponíveis.
