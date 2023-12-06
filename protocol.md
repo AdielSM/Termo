@@ -1,4 +1,4 @@
-# start
+# start_game
 Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 
 ## Resposta:
@@ -16,17 +16,27 @@ Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 }
 ```
 
-# restart
-Solicita a continuação com novo jogo
+# restart_game
+Solicita que o jogo atual seja reiniciado
 
 ## Resposta:
-201 <span style="color:lightblue"> (Jogo Reiniciado) </span>
+205 <span style="color:lightblue"> (Jogo Reiniciado) </span>
+
 ```json
 {
     "message": "205"
 }
+```
+# continue_game
 
-# exit
+206 <span style="color:lightblue"> (Jogo Continuado) </span>
+```json
+{
+    "message": "206"
+}
+```
+
+# exit_game
 Solicita que o jogo atual se encerre
 
 ## Resposta:
@@ -45,7 +55,7 @@ Solicita que o jogo atual se encerre
 ```
 
 
-# check-word
+# check_word
 Envia uma palavra para validação no lado do servidor (checando se acertou)
 
 ## Requisição:
