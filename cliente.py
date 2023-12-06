@@ -22,30 +22,36 @@ class EstadoDoJogo(Enum):
 table = PrettyTable()
 estadoDoJogo = EstadoDoJogo.Sem_jogo
 
+print('='*50)
+print('Bem vindo ao jogo de palavras Termo!')
+print('='*50)
+nomeUsuario = input('Digite seu nome: ')
+print('')
+
 def renderTable():
     table.clear_rows()
     table.field_names = ["Opção", "Descrição"]
     table.add_row(["1", "Começar um jogo"])
     table.add_row(["2", "Sair do jogo atual"])
 
-    if not estadoDoJogo == EstadoDoJogo.Sem_jogo:
+    if estadoDoJogo != EstadoDoJogo.Sem_jogo:
         table.add_row(["3", "Checar palavra"])
         table.add_row(["4", "Listar palavras digitadas nessa rodada"])
+        table.add_row(["5", "Reiniciar jogo atual"])
 
     table.align["Opção"] = "l"
     table.align["Descrição"] = "l"
 
     print('')
     print(table)
-    print('')
 
 def proccessUserCommand(comando_usuario:str)->tuple:
     if comando_usuario == '1':
-        comando = "start"
+        comando = "start_game"
         parametro = None
-            
+        
     elif comando_usuario == '2':
-        comando = "exit"
+        comando = "exit_game"
         parametro = None
     
     elif comando_usuario == '3' and estadoDoJogo == EstadoDoJogo.Jogo_em_andamento:
@@ -56,9 +62,13 @@ def proccessUserCommand(comando_usuario:str)->tuple:
     elif comando_usuario == '4' and estadoDoJogo == EstadoDoJogo.Jogo_em_andamento:
         comando = "list_words"
         parametro = None
+        
+    elif comando_usuario == '5' and estadoDoJogo == EstadoDoJogo.Jogo_em_andamento:
+        comando = "restart_game"
+        parametro = nomeUsuario
     
     else:
-        raise Exception("Comando inválido:",comando_usuario)
+        raise ValueError("Comando inválido:" + " " + comando_usuario)
 
     return (comando, parametro)
 
@@ -80,27 +90,26 @@ def checkEndGame() -> bool:
     usr_input = input('Digite 1 para continuar ou 2 para sair: ')
     
     while usr_input not in ['1','2']:
-        usr_input = input('Digite 1 para continuar ou 2 para sair: ')
+        usr_input = input('Digite uma opção válida (1/2): ')
     
     # Reinicia com novo jogo pra continuar e retorna False pra indicar continuação
     if usr_input == '1':
         req_body = {
-            "comando" : "restart",
+            "comando" : "continue_game",
             "parametro" : None
         }
 
         response_data = sendRequisition(req_body)
         response_status = response_data["code_status"]
-        render_response(response_status)
-
+        render_response(response_status, remaining_attemps=response_data["remaining_attemps"], player_name=nomeUsuario)
         estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
 
         return False
     
     print('')
     #Todo: Mostrar pontuação, colocar estatísticas
-    print('Obrigado por jogar!')
-    print('Feito com ❤️ em 🐍')
+    print(f'Obrigado por jogar {nomeUsuario}!')
+    print('Feito com ❤️  em 🐍')
     return True
 
 while True:
@@ -145,23 +154,27 @@ while True:
             else:
                 render_response(response_status, color_str, secret_word=response_data["secret_word"], remaining_attemps=remaining_attemps)
                 if checkEndGame(): break
-                
-        # Jogo não iniciado
-        elif response_status == 401:
-            render_response(response_status, remaining_attemps=remaining_attemps)
-
+        
+        # Restart game
+        elif response_status == 206:
+            render_response(response_status, remaining_attemps=remaining_attemps, player_name=nomeUsuario)
+            
         else:
             render_response(response_status, remaining_attemps=remaining_attemps)
 
 
     #*Colocar raises em validações ao longo do código da classe
     except KeyboardInterrupt:
-        comando = "/game/exit"
-        parametro = None
+        print('')
+        print(f'Obrigado por jogar {nomeUsuario}!')
+        print('Feito com ❤️  em 🐍')
         break
         
+    except ValueError as e:
+        print(e)
+        continue
+    
     except Exception as e:
-        print('entrei na exception')
         print(e)
         continue
     
