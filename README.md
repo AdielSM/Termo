@@ -14,9 +14,9 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 - [Próximos passos](#-próximos-passos)	
 
 ## ⚙️ Funcionalidades
-- [x] O jogo sorteia uma palavra aleatória de um arquivo de palavras e recebe palavras do usuário até que haja tentativas disponíveis.
+- [x] O jogo sorteia uma palavra aleatória de um arquivo e recebe palavras do usuário até que haja tentativas disponíveis.
 - [x] O jogo possui um sistema de pontuação que é calculado com base no número de tentativas restantes.
-- [x] O jogo possui um servidor que pode ser acessado por múltiplos clientes.
+- [x] O jogo possui um servidor que pode ser acessado por múltiplos clientes que estejam na mesma rede.
 - [x] O jogo possui um sistema de ranking que armazena o nome do jogador e sua pontuação, podendo fazer um ranking de jogadores ativos naquela sessão.
   
 ## 💻 Instalação
@@ -77,7 +77,7 @@ python client.py
 
 | <img src="./img/adielPerfilGithub.jpg" width="100" height="100"> | <img src="./img/caioPerfilGithub.png" width="100" height="100"> | <img src="./img/carlosPerfilGithub.jpg" width="100" height="100"> |
 |:---:|:---:|:---:|
-| [![LinkedIn](https://img.shields.io/badge/LinkedIn-Adiel-blue)]() [![GitHub](https://img.shields.io/badge/GitHub-AdielSM-black)](https://github.com/AdielSM) | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Caio-blue)]() [![GitHub](https://img.shields.io/badge/GitHub-Caio-black)]() | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Carlos-blue)]() [![GitHub](https://img.shields.io/badge/GitHub-CarlosTI-black)]() |
+| [![LinkedIn](https://img.shields.io/badge/LinkedIn-Adiel-blue)](https://www.linkedin.com/in/adiel-melo-073009273/) [![GitHub](https://img.shields.io/badge/GitHub-AdielSM-black)](https://github.com/AdielSM) | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Caio-blue)](https://www.linkedin.com/in/caio-soares-8b8a81251) [![GitHub](https://img.shields.io/badge/GitHub-Caio1-black)](https://github.com/caiosoares1) | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Carlos-blue)](https://www.linkedin.com/in/jovemcarlos/) [![GitHub](https://img.shields.io/badge/GitHub-CarlosTI-black)](https://github.com/JovemCarlosTI) |
 
 
 
