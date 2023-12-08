@@ -64,7 +64,6 @@ def render_response(data, format_output = None, **kwargs):
         case 206:
             player_name = kwargs['player_name']
             print(f'Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name} !')
-            print(remaining_attemps)
             
         case 400:
             print("Jogo já iniciado")
