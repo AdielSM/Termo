@@ -110,8 +110,10 @@ def checkEndGame() -> bool:
         }
 
         response_data = sendRequisition(req_body)
+        
         response_status = response_data["code_status"]
-        render_response(response_status, remaining_attemps=response_data["remaining_attemps"], player_name=nomeUsuario)
+        
+        render_response(response_status, player_name=nomeUsuario)
         estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
 
         return False
