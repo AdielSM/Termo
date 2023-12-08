@@ -28,13 +28,11 @@ class Termo:
     del palavrasTermo
     
     def __init__(self, qtdTentativas: int = 5) -> None:
-        self.__qtdTentativasRestantes: int = qtdTentativas
-        self.__pilhaPalavras: PilhaSequencial = PilhaSequencial(qtdTentativas)
         self.__estadoDoJogo: Estado = Estado.Sem_jogo
 
         self.iniciarJogo(qtdTentativas)
 
-    def iniciarJogo(self, qtdTentativas: int) -> None:
+    def iniciarJogo(self, qtdTentativas: int = 5) -> None:
         """
         Inicia o jogo com a quantidade de tentativas especificada.
 
