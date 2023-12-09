@@ -1,25 +1,50 @@
 import socket
 import json
+import sys
 from threading import Thread, Lock
 from Server import Termo, Jogador
 from utils import sumario_protocolo, server_config
 
+class JogadorFactory:
+    @staticmethod
+    def criarJogadorAtivo(cliente, con) -> Jogador:
+        jogador = Jogador(cliente, con)
+        jogador.jogo = Termo()           
+        return jogador
+
 class Server:
+    
+    _instance = None
+    
     def __init__(self):
-        self.__HOST = '0.0.0.0'
-        self.__TAM_MSG, self.__PORT = server_config()
-        self.__protocolo = sumario_protocolo()
-        self.__jogadoresAtivos = []
-        self.__jogadoresAtivos_lock = Lock()
-        # self.__parties = []
-        # self.__parties_lock = Lock()
-        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__sock.bind((self.__HOST, self.__PORT))
-        self.__sock.listen(10)
+        if Server._instance != None:
+            raise Exception("Esta classe é um singleton!")
+        
+        else:
+            Server._instance = self
+            self.__HOST = '0.0.0.0'
+            self.__TAM_MSG, self.__PORT = server_config()
+            self.__protocolo = sumario_protocolo()
+            self.__jogadoresAtivos = []
+            self.__jogadoresAtivos_lock = Lock()
+            # self.__parties = []
+            # self.__parties_lock = Lock()
+            self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                self.__sock.bind((self.__HOST, self.__PORT))
+            except OSError:
+                print("Não foi possível iniciar o servidor. Verifique se a porta está disponível.")
+                sys.exit(1)
+            self.__sock.listen(10)
+            
+    @classmethod
+    def get_instance(cls):
+        if cls._instance == None:
+            cls._instance = Server()
+        return cls._instance
 
     def __criarJogadorAtivo(self, cliente, con) -> Jogador:
-        jogador = Jogador(cliente, con)
-        jogador.jogo = Termo()                
+        jogador = JogadorFactory.criarJogadorAtivo(cliente, con)
         
         with self.__jogadoresAtivos_lock: 
             self.__jogadoresAtivos.append(jogador)
