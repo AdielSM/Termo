@@ -176,11 +176,15 @@ class PilhaSequencial:
         Returns:
            str: a carga dos elementos da pilha, do topo até a base
         """
-        s = ''
-        for i in range(len(self)):
-            s += f'{self.__array[i]}, '
-        s = s.rstrip(', ')
-        return s        
+        
+        if not self.estaVazia():
+            s = ''
+            for i in range(len(self)):
+                s += f'{self.__array[i]}, '
+            s = s.rstrip(', ')
+            return s
+        else:
+            return None       
     
     def verifica_elemento(self, elemento: any) -> bool:
             """Método que verifica se um elemento está presente na pilha.
