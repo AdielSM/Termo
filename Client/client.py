@@ -205,9 +205,9 @@ class Client:
             case 202:
                 self.__info("🏆 Parabéns! Palavra Correta! 😎")
                 self.__info("Lista de Palavras Anteriores:")
-                self.__info(str(self.pilhaPalavras))
-                self.pilhaPalavras.clear()
-                self.__info(remaining_attempts)
+                self.__info(str(self.__pilhaPalavras))
+                self.__pilhaPalavras.clear()
+                self.__info(f"Tentativas Restantes: {remaining_attempts}")
                 
             case 203:
                 self.__pilhaPalavras.empilha(format_output)
@@ -215,7 +215,7 @@ class Client:
                 self.__info("Palavra Incorreta!")
                 self.__info(format_output)
                 self.__info('')
-                self.__info(remaining_attempts)
+                self.__info(f"Tentativas Restantes: {remaining_attempts}")
                 
                 if remaining_attempts == 0:
                     self.__pilhaPalavras.clear()
@@ -223,7 +223,7 @@ class Client:
                     
             case 204:
                 self.__info("Lista de Palavras:")
-                self.__info(str(self.pilhaPalavras) + "\n")
+                self.__info(str(self.__pilhaPalavras) + "\n")
             case 205:
                 self.__info('Jogo Reiniciado com Sucesso\n')
             case 206:
@@ -267,6 +267,7 @@ class Client:
 
     
     def handle_response_status(self, response_status: int, response_data: Dict[str, Any], parametro: Any) -> bool:
+        remaining_attempts = response_data.get("remaining_attempts")
         if response_status == 200:
             self.__render_response(response_status)
             self.__estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
@@ -276,7 +277,7 @@ class Client:
             self.__estadoDoJogo = EstadoDoJogo.Sem_jogo
 
         elif response_status == 202:
-            self.__render_response(response_status, remaining_attempts=response_data["remaining_attempts"])
+            self.__render_response(response_status, remaining_attempts=remaining_attempts)
             if self.check_end_game():
                 self.__sock.close()
                 sys.exit(0)        
@@ -284,11 +285,11 @@ class Client:
         elif response_status == 203:
             color_str = self.__format_output(parametro, response_data["word_encoded"])
 
-            if response_data["remaining_attempts"] != 0:
-                self.__render_response(response_status, format_output=color_str, remaining_attempts=response_data["remaining_attempts"])
+            if remaining_attempts != 0:
+                self.__render_response(response_status, format_output=color_str, remaining_attempts=remaining_attempts)
             else:
                 self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"],
-                                remaining_attempts=response_data["remaining_attempts"])
+                                remaining_attempts=remaining_attempts)
                 if self.check_end_game():
                     self.__sock.close()     
                     sys.exit(0)  
@@ -298,7 +299,7 @@ class Client:
             self.__render_response(response_status, player_name=self.__nomeUsuario)
             
         else:
-            self.__render_response(response_status, remaining_attempts=response_data["remaining_attempts"])
+            self.__render_response(response_status, remaining_attempts=remaining_attempts)
                 
     def run(self) -> None:
             try:    

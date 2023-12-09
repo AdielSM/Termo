@@ -29,11 +29,11 @@ class Jogador:
         
     @property
     def pontuacao(self) -> int:
-        return self.__pontuacao
+        return self.__pontuacaoNaRodada
     
     @pontuacao.setter
     def pontuacao(self, pontuacao: int):
-        self.__pontuacao = pontuacao
+        self.__pontuacaoNaRodada = pontuacao
             
     @property
     def jogadorAtivo(self) -> bool:
@@ -60,4 +60,4 @@ class Jogador:
         self.__jogo = jogo
 
     def addPontuacao(self):
-        self.__pontuacao += 1
+        self.__pontuacaoNaRodada += 1
