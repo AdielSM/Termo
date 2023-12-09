@@ -8,7 +8,6 @@ class Jogador:
         self.__cliente = cliente
         self.__con = con
         self.__pontuacaoTotal = 0
-        self.__pontuacaoNaRodada = 0
         self.__jogo = None
         
     @property
@@ -30,10 +29,6 @@ class Jogador:
     @property
     def pontuacao(self) -> int:
         return self.__pontuacaoNaRodada
-    
-    @pontuacao.setter
-    def pontuacao(self, pontuacao: int):
-        self.__pontuacaoNaRodada = pontuacao
             
     @property
     def jogadorAtivo(self) -> bool:
@@ -59,5 +54,22 @@ class Jogador:
     def jogo(self, jogo: Termo):
         self.__jogo = jogo
 
-    def addPontuacao(self):
-        self.__pontuacaoNaRodada += 1
+    def addPontuacao(self, tentativas_restantes:int, tempoEmSegundos:int) -> None:
+        pontuacao = tentativas_restantes + tentativas_restantes / (tempoEmSegundos % 10)
+        self.__pontuacaoTotal += pontuacao
+        
+        
+    '''
+    
+    5 pessoas
+    
+    termo(jogo)
+    
+    pessoa 1 5 tentativas
+    pessoa 2 ||
+    ||       ||
+
+    4 5 = 9
+    4 11 = 8
+    
+    '''
