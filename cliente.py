@@ -13,7 +13,7 @@ HOST = '127.0.0.1'
 TAM_MSG, PORT = server_config()
 
 def connect_to_server():
-    while True:
+    for _ in range(5):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((HOST, PORT))
@@ -22,7 +22,14 @@ def connect_to_server():
             print("Erro ao conectar ao servidor. Tentando novamente em 5 segundos.")
             sleep(5)
 
-sock = connect_to_server()
+    raise socket.error("Não foi possível conectar ao servidor. Tente reiniciar o jogo.")
+    
+try:
+    sock = connect_to_server()
+except socket.error as e:
+    print('')
+    print(e)
+    exit()
 
 class EstadoDoJogo(Enum):
     Sem_jogo = 1
@@ -36,7 +43,6 @@ print('='*50)
 print('Bem vindo ao jogo de palavras Termo!')
 print('='*50)
 nomeUsuario = input('Digite seu nome: ')
-print('')
 
 def renderTable():
     table.clear_rows()
@@ -52,7 +58,6 @@ def renderTable():
     table.align["Opção"] = "l"
     table.align["Descrição"] = "l"
 
-    print('')
     print(table)
 
 def proccessUserCommand(comando_usuario:str)->tuple:
@@ -110,10 +115,10 @@ def checkEndGame() -> bool:
         }
 
         response_data = sendRequisition(req_body)
-        
         response_status = response_data["code_status"]
         
         render_response(response_status, player_name=nomeUsuario)
+        
         estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
 
         return False
@@ -139,40 +144,43 @@ while True:
         
         response_data = sendRequisition(req_body)
         response_status =  response_data["code_status"]
-        remaining_attemps = response_data.get("remaining_attemps")
+        remaining_attempts = response_data.get("remaining_attempts")
         
-        # Jogo iniciado
+        
         if response_status == 200:
-            render_response(response_status, remaining_attemps=remaining_attemps)
+            render_response(response_status)
             estadoDoJogo = EstadoDoJogo.Jogo_em_andamento
 
-        # Jogo encerrado
         elif response_status == 201:
-            render_response(response_status, remaining_attemps=remaining_attemps)
+            render_response(response_status)
             estadoDoJogo = EstadoDoJogo.Sem_jogo
 
-        
-        # Palavra correta
         elif response_status == 202:
-            render_response(response_status, remaining_attemps=remaining_attemps)
-            if checkEndGame(): break
+            render_response(response_status, remaining_attempts=remaining_attempts)
+            if checkEndGame():
+                break
 
-        # Palavra incorreta
         elif response_status == 203:
             color_str = format_output(parametro, response_data["word_encoded"])
-            
-            if remaining_attemps != 0:
-                render_response(response_status, color_str, remaining_attemps=remaining_attemps)
+
+            if remaining_attempts != 0:
+                render_response(response_status, color_str, remaining_attempts=remaining_attempts)
             else:
-                render_response(response_status, color_str, secret_word=response_data["secret_word"], remaining_attemps=remaining_attemps)
-                if checkEndGame(): break
-        
-        # Restart game
+                render_response(response_status, color_str, secret_word=response_data["secret_word"], remaining_attempts=remaining_attempts)
+                if checkEndGame():
+                    break
+
         elif response_status == 206:
-            render_response(response_status, remaining_attemps=remaining_attemps, player_name=nomeUsuario)
+            render_response(response_status, player_name=nomeUsuario)
             
+        elif response_status in [402, 403, 404, 405]:
+            render_response(response_status, remaining_attempts=remaining_attempts)
+
         else:
-            render_response(response_status, remaining_attemps=remaining_attemps)
+            if response_status == 499 and remaining_attempts:
+                render_response(response_status, remaining_attempts=remaining_attempts)
+            else:
+                render_response(response_status)
 
 
     #*Colocar raises em validações ao longo do código da classe

@@ -11,13 +11,14 @@ class Server:
         self.__protocolo = sumario_protocolo()
         self.__jogadoresAtivos = []
         self.__jogadoresAtivos_lock = Lock()
+        # self.__parties = []
+        # self.__parties_lock = Lock()
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__sock.bind((self.__HOST, self.__PORT))
         self.__sock.listen(10)
 
     def __criarJogadorAtivo(self, cliente, con) -> Jogador:
         jogador = Jogador(cliente, con)
-        jogador.jogadorAtivo = True
         jogador.jogo = Termo()                
         
         with self.__jogadoresAtivos_lock: 
@@ -30,7 +31,6 @@ class Server:
             if jogador.cliente == cliente:
                 with self.__jogadoresAtivos_lock: 
                     self.__jogadoresAtivos.remove(jogador)
-                jogador.jogadorAtivo = False
                 return
             
         raise Exception()
@@ -57,7 +57,7 @@ class Server:
                 "code_status": self.__protocolo['JOGO_INICIADO']
             }
 
-    def __restart_game(self, jogadorAtual, cliente, con):
+    def __restart_game(self, cliente, con):
         try:
             self.__removerJogadorAtivo(cliente)     
             self.__criarJogadorAtivo(cliente, con)
@@ -81,7 +81,7 @@ class Server:
                 "code_status" : self.__protocolo['JOGO_CONTINUADO'],
             }
             
-    def __exit_game(self, jogadorAtual, cliente):
+    def __exit_game(self, cliente):
         try:
             self.__removerJogadorAtivo(cliente)                            
             return {
@@ -108,9 +108,7 @@ class Server:
             if isinstance(feedback,int):
                 
                 if feedback == 202:
-                    
                     jogadorAtual.addPontuacao()
-                    jogadorAtual.jogadorVencedor = True
                     return {
                         "code_status" : self.__protocolo['PALAVRA_CORRETA'],
                         "remaining_attempts" : jogadorAtual.jogo.qtdTentativasRestantes
@@ -180,13 +178,13 @@ class Server:
                     data = self.__start_game(jogadorAtual, cliente, con)
                 
                 case "restart_game":
-                    data = self.__restart_game(jogadorAtual, cliente, con)
+                    data = self.__restart_game(cliente, con)
                     
                 case "continue_game":
                     data = self.__continue_game(jogadorAtual)
                     
                 case "exit_game":
-                    data = self.__exit_game(jogadorAtual, cliente)
+                    data = self.__exit_game(cliente)
                     
                 case "check_word":
                     data = self.__check_word(jogadorAtual, parametro)
