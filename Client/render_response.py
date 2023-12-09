@@ -16,86 +16,79 @@ def render_response(data, format_output = None, **kwargs):
     Nenhum valor de retorno.
     """
     
-    remaining_attemps = kwargs.get("remaining_attemps")
-    if remaining_attemps:
-        remaining_attemps = "Tentativas Restantes: " + str(remaining_attemps) + "\n"
-    else:
-        remaining_attemps = ''
-    
+    try:
+        remaining_attempts = kwargs["remaining_attempts"]
+        remaining_attempts = "Tentativas Restantes: " + str(remaining_attempts) + "\n"
+    except KeyError:
+        pass
+
+            
     match data:
         case 200:
-            print("Jogo Iniciado com Sucesso")
-            print(remaining_attemps)
+            print("Jogo Iniciado com Sucesso",end='\n\n')
             
         case 201:
-            print("Jogo Encerrado com Sucesso")
-            print(remaining_attemps)
+            print("Jogo Encerrado com Sucesso",end='\n\n')
             
         case 202:
-            #toDo melhorar resposta de palavra correta
             print("🏆 Parabéns! Palavra Correta! 😎")
             print("Lista de Palavras Anteriores:")
             print(pilhaPalavras)
-            print(remaining_attemps)
+            pilhaPalavras.clear()
+            print(remaining_attempts)
             
         case 203:
             pilhaPalavras.empilha(format_output)
             print('')
             print("Palavra Incorreta!")
-            
             print(format_output)
             print('')
-            print(remaining_attemps)
+            print(remaining_attempts)
 
-
-            if kwargs["remaining_attemps"] == 0:
-                print('')
-                secret_word_animation(kwargs["secret_word"])
+            if kwargs.get("remaining_attempts", '') == 0:
+                pilhaPalavras.clear()
+                secret_word_animation(kwargs.get("secret_word"))
                 
         case 204:
             print("Lista de Palavras:")
-            print(pilhaPalavras)
-            print(remaining_attemps)
+            print(pilhaPalavras,end='\n\n')
             
         case 205:
-            print('Jogo Reiniciado com Sucesso')
-            print(remaining_attemps)
+            print('Jogo Reiniciado com Sucesso',end='\n\n')
             
         case 206:
-            player_name = kwargs['player_name']
-            print(f'Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name} !')
+            player_name = kwargs.get('player_name')
+            print(f'Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!',end='\n\n')
             
         case 400:
-            print("Jogo já iniciado")
-            print(remaining_attemps)
+            print("Jogo já iniciado",end='\n\n')
             
         case 401:
-            print("Jogo não iniciado")
-            print(remaining_attemps)
-            
+            print("Jogo não iniciado",end="\n\n")
             
         case 402:
             print("Necessário Forcener uma Palavra")
-            print(remaining_attemps)
+            print(remaining_attempts)
 
-            
         case 403:
             print("A palavra deve conter 5 letras")
-            print(remaining_attemps)
+            print(remaining_attempts)
 
-            
         case 404:
             print("Palavra inexiste no dicionário")
-            print(remaining_attemps)
+            print(remaining_attempts)
 
-            
         case 405:
             print("Palavra já utilizada")
-            print(remaining_attemps)
+            print(remaining_attempts)
             
         case 499:
-            print("Comando Inválido")
-            print(remaining_attemps)
+            if remaining_attempts:
+                print("Comando Inválido")
+                print(remaining_attempts)
+            
+            else:
+                print("Comando Inválido")
             
 
 def secret_word_animation(palavra) -> None:
