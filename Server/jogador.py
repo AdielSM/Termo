@@ -7,9 +7,8 @@ class Jogador:
     def __init__(self, cliente: str, con: str):
         self.__cliente = cliente
         self.__con = con
-        self.__pontuacao = 0
-        self.__jogadorAtivo = False
-        self.__jogadorVencedor = False
+        self.__pontuacaoTotal = 0
+        self.__pontuacaoNaRodada = 0
         self.__jogo = None
         
     @property
