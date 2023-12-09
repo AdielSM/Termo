@@ -1,1 +1,1 @@
-from .client import Client, Logger
+from .client import Client

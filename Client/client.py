@@ -4,27 +4,15 @@ from prettytable import PrettyTable
 import socket
 import json
 import sys
-from typing import Tuple, Dict, Any, List, Optional
+from typing import Tuple, Dict, Any, Optional
 
 from utils import server_config, PilhaSequencial
-
-
 
 class EstadoDoJogo(Enum):
     Sem_jogo = 1
     Jogo_em_andamento = 2
     Jogo_finalizado = 3
     
-
-class Logger:
-    def __init__(self) -> None:
-        pass
-    
-    def update(self, message: str) -> None:
-        print(message)
-    
-    def info(self, message: str) -> None:
-        print(message)
 
 class Client:
     def __init__(self) -> None:
@@ -33,19 +21,8 @@ class Client:
         self.__sock: Optional[socket.socket] = None
         self.__estadoDoJogo: EstadoDoJogo = EstadoDoJogo.Sem_jogo
         self.__nomeUsuario: Optional[str] = None
-        self.__observers: List[Logger] = []
         self.__pilhaPalavras = PilhaSequencial()
-        
-    def subscribe(self, observer: Logger) -> None:
-        self.__observers.append(observer)
-        
-    def __notify(self, message: str) -> None:
-        for observer in self.__observers:
-            observer.update(message)
-            
-    def __info(self, message: str) -> None:
-        for observer in self.__observers:
-            observer.info(message)
+        self.__table = PrettyTable()
 
     def connect_to_server(self) -> socket.socket:
         for _ in range(5):
@@ -54,30 +31,31 @@ class Client:
                 sock.connect((self.__HOST, self.__PORT))
                 return sock
             except socket.error:
-                self.__notify("Erro ao conectar ao servidor. Tentando novamente em 5 segundos.")
+                print("Erro ao conectar ao servidor. Tentando novamente em 5 segundos.")
                 sleep(5)
             except KeyboardInterrupt:
-                self.__notify("Encerrando o Termo!")
+                print("Encerrando o Termo!")
                 exit(0)
 
         raise socket.error("Não foi possível conectar ao servidor. Tente reiniciar o jogo.")
 
+    
     def render_table(self) -> None:
-        table = PrettyTable()
-        table.clear_rows()
-        table.field_names = ["Opção", "Descrição"]
-        table.add_row(["1", "Começar um jogo"])
-        table.add_row(["2", "Sair do jogo atual"])
+        self.__table.clear_rows()
+        self.__table.field_names = ["Opção", "Descrição"]
+        self.__table.add_row(["1", "Começar um jogo"])
+        self.__table.add_row(["2", "Sair do jogo atual"])
 
         if self.__estadoDoJogo != EstadoDoJogo.Sem_jogo:
-            table.add_row(["3", "Checar palavra"])
-            table.add_row(["4", "Listar palavras digitadas nessa rodada"])
-            table.add_row(["5", "Reiniciar jogo atual"])
+            self.__table.add_row(["3", "Checar palavra"])
+            self.__table.add_row(["4", "Listar palavras digitadas nessa rodada"])
+            self.__table.add_row(["5", "Reiniciar jogo atual"])
 
-        table.align["Opção"] = "l"
-        table.align["Descrição"] = "l"
+        self.__table.align["Opção"] = "l"
+        self.__table.align["Descrição"] = "l"
 
-        self.__notify(str(table))
+        print("")
+        print(self.__table)
 
     def process_user_command(self, comando_usuario: str) -> Tuple[str, Any]:
         if comando_usuario == '1':
@@ -121,9 +99,8 @@ class Client:
     def check_end_game(self) -> bool:
         self.__estadoDoJogo = EstadoDoJogo.Jogo_finalizado
 
-        self.__notify('')
-        self.__notify('A rodada acabou!')
-        self.__notify('Deseja continuar jogando?')
+        
+        print('\nA rodada acabou!\nDeseja continuar jogando?\n')
         usr_input = input('Digite 1 para continuar ou 2 para sair: ')
 
         while usr_input not in ['1', '2']:
@@ -145,17 +122,11 @@ class Client:
 
             return False
 
-        self.__notify('')
-
-        self.__notify(f'Obrigado por jogar {self.__nomeUsuario}!')
-        self.__notify('Feito com ❤️  em 🐍')
+        print(f"\nObrigado por jogar {self.__nomeUsuario}!\nFeito com ❤️  em 🐍\n")
         return True
 
     def print_welcome_message(self) -> None:
-        self.__notify('=' * 50)
-        self.__notify('Bem vindo ao jogo de palavras Termo!')
-        self.__notify('=' * 50)
-
+        print(f'''\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}''')
     def get_username(self) -> str:
         return input('Digite seu nome: ')
 
@@ -163,7 +134,7 @@ class Client:
         return input('Termo> ')
     
     def print_exit_message(self) -> None:
-        self.__notify("\033[90mAperte Ctrl + C para encerrar o Termo!\033[0m")
+        print("\033[90mAperte Ctrl + C para encerrar o Termo!\033[0m")
 
 
     def create_request_body(self, comando: str, parametro: Any) -> Dict[str, Any]:
@@ -173,20 +144,18 @@ class Client:
         }
 
     def handle_keyboard_interrupt(self) -> None:
-        self.__notify('')
-        self.__notify(f'Obrigado por jogar {self.__nomeUsuario}!')
-        self.__notify('Feito com ❤️  em 🐍')
+        print(f"\nObrigado por jogar {self.__nomeUsuario}!\nFeito com ❤️  em 🐍\n")
+        sys.exit(0)
     
 
     def __secret_word_animation(self, palavra) -> None:
         palavra_transformada = ['_' for _ in palavra]
         
-        self.__info('Você não conseguiu adivinhar a palavra secreta!')
-        self.__info('A palavra era:')
+        print('''Você não conseguiu adivinhar a palavra secreta!\nA palavra era:''')
         
         for i in range(len(palavra)):
             palavra_transformada[i] = palavra[i]
-            self.__info(''.join(palavra_transformada))
+            print(''.join(palavra_transformada))
             sleep(1)
             
 
@@ -199,35 +168,33 @@ class Client:
         
         match response_status:
             case 200:
-                self.__info("Jogo Iniciado com Sucesso\n")
+                print("Jogo Iniciado com Sucesso")
+                
             case 201:
-                self.__info("Jogo Encerrado com Sucesso\n")
+                print("Jogo Encerrado com Sucesso")
+                
             case 202:
-                self.__info("🏆 Parabéns! Palavra Correta! 😎")
-                self.__info("Lista de Palavras Anteriores:")
-                self.__info(str(self.__pilhaPalavras))
+                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__pilhaPalavras)}\nTentativas Restantes: {remaining_attempts}')
                 self.__pilhaPalavras.clear()
-                self.__info(f"Tentativas Restantes: {remaining_attempts}")
                 
             case 203:
                 self.__pilhaPalavras.empilha(format_output)
-                self.__info('')
-                self.__info("Palavra Incorreta!")
-                self.__info(format_output)
-                self.__info('')
-                self.__info(f"Tentativas Restantes: {remaining_attempts}")
-                
+                print(f"\nPalavra Incorreta!\n{format_output}\nTentativas Restantes: {remaining_attempts}")
                 if remaining_attempts == 0:
                     self.__pilhaPalavras.clear()
                     self.__secret_word_animation(secret_word)
                     
             case 204:
-                self.__info("Lista de Palavras:")
-                self.__info(str(self.__pilhaPalavras) + "\n")
+                if self.__pilhaPalavras:
+                    print(f"Lista de Palavras:\n{self.__pilhaPalavras}")
+                else:
+                    print('Não há palavras digitadas para essa rodada!')
+                    
             case 205:
-                self.__info('Jogo Reiniciado com Sucesso\n')
+                print('Jogo Reiniciado com Sucesso\n')
+                
             case 206:
-                self.__info(f'Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!\n')
+                print(f'Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!')
 
     def __handle_error_cases(self, response_status, **remaining_attempts):
         
@@ -235,27 +202,21 @@ class Client:
         
         match response_status:
             case 400:
-                self.__info("Jogo já iniciado\n")
+                print("Jogo já iniciado")
             case 401:
-                self.__info("Jogo não iniciado\n")
+                print("Jogo não iniciado")
             case 402:
-                self.__info("Necessário Forcener uma Palavra")
-                self.__info(remaining_attempts)
+                print(f"Necessário Forcener uma Palavra\nTentativas Restantes: {remaining_attempts}")
             case 403:
-                self.__info("A palavra deve conter 5 letras")
-                self.__info(remaining_attempts)
+                print(f"A palavra deve conter 5 letras\nTentativas Restantes: {remaining_attempts}")
             case 404:
-                self.__info("Palavra inexiste no dicionário")
-                self.__info(remaining_attempts)
+                print(f'Palavra não existe no dicionário\nTentativas Restantes: {remaining_attempts}')
             case 405:
-                self.__info("Palavra já utilizada")
-                self.__info(remaining_attempts)
+                print(f'Palavra já utilizada\nTentativas Restantes: {remaining_attempts}')
             case 499:
-                if remaining_attempts:
-                    self.__info("Comando Inválido")
-                    self.__info(remaining_attempts)
-                else:
-                    self.__info("Comando Inválido")
+                print("\033[91m Comando Inválido\033[0m")
+                if remaining_attempts: 
+                    print(f'Tentativas Restantes: {remaining_attempts}')
 
     def __render_response(self, response_status: int, **extra_info):
         
@@ -325,15 +286,15 @@ class Client:
                         self.handle_keyboard_interrupt()
 
                     except ValueError as e:
-                        self.__info(str(e))  
+                        print(str(e))  
                         continue
 
                     except Exception as e:
-                        self.__info(str(e))  
+                        print(str(e))  
                         continue
                     
             except Exception as e:
-                self.__info(str(e))  
+                print(str(e))  
             return
 
     
