@@ -192,3 +192,8 @@ class PilhaSequencial:
                 bool: True se o elemento estiver presente na pilha, False caso contrário.
             """
             return elemento in self.__array
+        
+    def clear(self) -> None:
+        """Método que limpa a pilha."""
+        self.__array = np.full(len(self.__array), None, dtype=object)
+        self.__topo = -1
