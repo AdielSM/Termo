@@ -6,7 +6,7 @@ import json
 import sys
 from typing import Tuple, Dict, Any, Optional
 
-from utils import server_config, PilhaSequencial
+from utils import server_config, PilhaEncadeada
 
 class EstadoDoJogo(Enum):
     Sem_jogo = 1
@@ -21,7 +21,7 @@ class Client:
         self.__sock: Optional[socket.socket] = None
         self.__estadoDoJogo: EstadoDoJogo = EstadoDoJogo.Sem_jogo
         self.__nomeUsuario: Optional[str] = None
-        self.__pilhaPalavras = PilhaSequencial()
+        self.__pilhaPalavras = PilhaEncadeada()
         self.__table = PrettyTable()
 
     def connect_to_server(self) -> socket.socket:
@@ -31,11 +31,12 @@ class Client:
                 sock.connect((self.__HOST, self.__PORT))
                 return sock
             except socket.error:
-                print("Erro ao conectar ao servidor. Tentando novamente em 5 segundos.")
-                sleep(5)
-            except KeyboardInterrupt:
-                print("Encerrando o Termo!")
-                exit(0)
+                try:
+                    print("Erro ao conectar ao servidor. Tentando novamente em 5 segundos.")
+                    sleep(5)
+                except KeyboardInterrupt:
+                    print("Encerrando o Termo!")
+                    exit(0)
 
         raise socket.error("Não foi possível conectar ao servidor. Tente reiniciar o jogo.")
 
@@ -127,6 +128,7 @@ class Client:
 
     def print_welcome_message(self) -> None:
         print(f'''\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}''')
+    
     def get_username(self) -> str:
         return input('Digite seu nome: ')
 
@@ -157,8 +159,13 @@ class Client:
             palavra_transformada[i] = palavra[i]
             print(''.join(palavra_transformada))
             sleep(1)
-            
-
+    
+    def __print_attempts(self, remaining_attempts):
+        if remaining_attempts >= 0:
+            return f"Tentativas Restantes: {remaining_attempts}"
+        else:
+            return f"Quantidade de Tentativas até o Momento: {len(self.__pilhaPalavras)}"
+        
     def __handle_successful_cases(self, response_status, **extra_info):
         
         remaining_attempts = extra_info.get("remaining_attempts")
@@ -174,12 +181,16 @@ class Client:
                 print("Jogo Encerrado com Sucesso")
                 
             case 202:
-                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__pilhaPalavras)}\nTentativas Restantes: {remaining_attempts}')
+                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__pilhaPalavras)}\n{self.__print_attempts(remaining_attempts)}')
                 self.__pilhaPalavras.clear()
                 
             case 203:
                 self.__pilhaPalavras.empilha(format_output)
-                print(f"\nPalavra Incorreta!\n{format_output}\nTentativas Restantes: {remaining_attempts}")
+                
+                print(f"\nPalavra Incorreta!\n{format_output}")
+                
+                self.__print_attempts(remaining_attempts)
+                
                 if remaining_attempts == 0:
                     self.__pilhaPalavras.clear()
                     self.__secret_word_animation(secret_word)
@@ -206,17 +217,17 @@ class Client:
             case 401:
                 print("Jogo não iniciado")
             case 402:
-                print(f"Necessário Forcener uma Palavra\nTentativas Restantes: {remaining_attempts}")
+                print(f"Necessário Forcener uma Palavra\n{self.__print_attempts(remaining_attempts)}")
             case 403:
-                print(f"A palavra deve conter 5 letras\nTentativas Restantes: {remaining_attempts}")
+                print(f"A palavra deve conter 5 letras\n{self.__print_attempts(remaining_attempts)}")
             case 404:
-                print(f'Palavra não existe no dicionário\nTentativas Restantes: {remaining_attempts}')
+                print(f'Palavra não existe no dicionário\n{self.__print_attempts(remaining_attempts)}')
             case 405:
-                print(f'Palavra já utilizada\nTentativas Restantes: {remaining_attempts}')
+                print(f'Palavra já utilizada\n{self.__print_attempts(remaining_attempts)}')
             case 499:
                 print("\033[91m Comando Inválido\033[0m")
                 if remaining_attempts: 
-                    print(f'Tentativas Restantes: {remaining_attempts}')
+                    print(f'{self.__print_attempts(remaining_attempts)}')
 
     def __render_response(self, response_status: int, **extra_info):
         
