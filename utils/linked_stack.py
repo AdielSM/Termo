@@ -98,7 +98,7 @@ class LinkedStack:
         except TypeError:
             raise StackException('Digite um número inteiro referente ao elemento desejado')
         except AssertionError as ae:
-            raise StackException(ae.__str__(), 'elemento()')
+            raise StackException(ae.__str__())
         except:
             raise
 
