@@ -23,8 +23,8 @@ class Player:
         return self.__game
 
     @game.setter
-    def jogo(self, jogo: Termo):
-        self.__game = jogo
+    def game(self, game: Termo):
+        self.__game = game
 
     @property
     def total_score(self) -> int:

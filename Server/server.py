@@ -140,13 +140,13 @@ class Server:
         """
         if current_player:
             return {
-                "code_status": self.__protocol['JOGO_JA_INICIADO']
+                "status_code": self.__protocol['JOGO_JA_INICIADO']
             }
 
         else:
             current_player = self.__make_player_active(client, con)
             return {
-                "code_status": self.__protocol['JOGO_INICIADO']
+                "status_code": self.__protocol['JOGO_INICIADO']
             }
 
 
@@ -170,11 +170,11 @@ class Server:
             self.__make_player_active(client, con)
 
             return {
-                "code_status" : self.__protocol['JOGO_REINICIADO'],
+                "status_code" : self.__protocol['JOGO_REINICIADO'],
             }
         except PlayerNotFoundException:
             return {
-                "code_status" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
 
 
@@ -190,12 +190,12 @@ class Server:
         """
         if not current_player:
             return {
-                "code_status" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
         else:
             current_player.game.start_game()
             return {
-                "code_status" : self.__protocol['JOGO_CONTINUADO'],
+                "status_code" : self.__protocol['JOGO_CONTINUADO'],
             }
 
 
@@ -217,11 +217,11 @@ class Server:
         try:
             self.__remove_player_active(client)
             return {
-                "code_status" : self.__protocol['JOGO_ENCERRADO'],
+                "status_code" : self.__protocol['JOGO_ENCERRADO'],
             }
         except PlayerNotFoundException:
             return {
-                "code_status" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
 
 
@@ -242,12 +242,12 @@ class Server:
 
         if not current_player:
             return {
-                "code_status" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
 
         elif not parameter:
             return {
-                "code_status" : self.__protocol['NECESSARIO_PARAMETRO'],
+                "status_code" : self.__protocol['NECESSARIO_PARAMETRO'],
             }
 
         else:
@@ -257,15 +257,15 @@ class Server:
             if isinstance(feedback,int):
 
                 if feedback == 202:
-                    current_player.addPontuacao()
+                    current_player.add_score(current_player.game.remaining_attempts, 3)# todo: fazer a lógica do tempo
                     return {
-                        "code_status" : self.__protocol['PALAVRA_CORRETA'],
+                        "status_code" : self.__protocol['PALAVRA_CORRETA'],
                         "remaining_attempts" : current_player.game.remaining_attempts
                     }
 
                 else:
                     return {
-                        "code_status" : feedback,
+                        "status_code" : feedback,
                         "remaining_attempts" : current_player.game.remaining_attempts
                     }
 
@@ -274,7 +274,7 @@ class Server:
                 if current_player.game.remaining_attempts != 0:
 
                     return {
-                        "code_status" : self.__protocol['PALAVRA_INCORRETA'],
+                        "status_code" : self.__protocol['PALAVRA_INCORRETA'],
                         "word_encoded" : feedback,
                         "remaining_attempts" : current_player.game.remaining_attempts
                     }
@@ -282,7 +282,7 @@ class Server:
                 else:
 
                     return {
-                        "code_status" : self.__protocol['PALAVRA_INCORRETA'],
+                        "status_code" : self.__protocol['PALAVRA_INCORRETA'],
                         "word_encoded" : feedback,
                         "remaining_attempts" : current_player.game.remaining_attempts,
                         "secret_word" : current_player.game.secret_word
@@ -302,12 +302,12 @@ class Server:
 
         if not current_player:
             return {
-                "code_status" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
 
         else:
             return {
-                "code_status" : self.__protocol['LISTAR_PALAVRAS'],
+                "status_code" : self.__protocol['LISTAR_PALAVRAS'],
             }
 
 
@@ -325,12 +325,12 @@ class Server:
         """
         if current_player:
             return {
-                "code_status" : self.__protocol['COMANDO_INVALIDO'],
+                "status_code" : self.__protocol['COMANDO_INVALIDO'],
                 "remaining_attempts" : current_player.game.remaining_attempts
             }
         else:
             return {
-                "code_status" : self.__protocol['COMANDO_INVALIDO'],
+                "status_code" : self.__protocol['COMANDO_INVALIDO'],
             }
 
 

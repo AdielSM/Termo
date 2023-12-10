@@ -75,13 +75,10 @@ class Termo:
         self.__unlimited_attempts = unlimited_attempts
         self.__remaining_attempts: int = attempts_number if not unlimited_attempts else -1
         self.__words_stack: LinkedStack = LinkedStack()
-        if not unlimited_attempts:
-            self.__game_status = TermoStatus.GAME_WITHOUT_TRY
-        else:
-            self.__game_status = TermoStatus.GAME_WITH_TRY
+        self.__game_status = TermoStatus.GAME_WITH_TRY
 
     @property
-    def word(self) -> str:
+    def secret_word(self) -> str:
         """
         Retorna a palavra do jogo.
 
