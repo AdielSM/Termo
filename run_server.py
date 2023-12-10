@@ -1,8 +1,6 @@
-from Server import Server
+from Server.server import Server
 
 if __name__ == "__main__":
-    
     print("Iniciando Servidor...")
-
     servidor = Server()
     servidor.run()
