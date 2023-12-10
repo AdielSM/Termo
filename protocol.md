@@ -5,14 +5,14 @@ Solicita um novo jogo ao servidor e cria uma thread para lidar com usuário
 200 <span style="color:lightblue"> (Jogo Iniciado) </span>
 ```json
 {
-    "message": "200"
+    "status_code": "200"
 }
 ```
 
 400  <span style="color:lightblue"> (Jogo já iniciado) </span>
 ```json
 {
-    "message": "400"
+    "status_code": "400"
 }
 ```
 
@@ -24,7 +24,7 @@ Solicita que o jogo atual seja reiniciado
 
 ```json
 {
-    "message": "205"
+    "status_code": "205"
 }
 ```
 # continue_game
@@ -32,7 +32,7 @@ Solicita que o jogo atual seja reiniciado
 206 <span style="color:lightblue"> (Jogo Continuado) </span>
 ```json
 {
-    "message": "206"
+    "status_code": "206"
 }
 ```
 
@@ -43,14 +43,14 @@ Solicita que o jogo atual se encerre
 201 <span style="color:lightblue"> (Jogo Encerrado) </span>
 ```json
 {
-    "message": "201"
+    "status_code": "201"
 }
 ```
 
 401  <span style="color:lightblue"> (Jogo não iniciado) </span>
 ```json
 {
-    "message": "401"
+    "status_code": "401"
 }
 ```
 
@@ -69,39 +69,39 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 202 <span style="color:lightblue"> (Palavra Correta) </span>
 ```json
 {
-    "message": "202",
+    "status_code": "202",
     "attempts": quantidade de tentativas restantes
 }
 ```
 
 203 <span style="color:lightblue"> (Palavra Incorreta) </span>
 
-### Código das cores:
+##### Código das cores:
  - 0: cinza 
  - 1: amarelo
  - 2: verde
 
 ```json
 {
-    "message": "203",
+    "status_code": "203",
 
 
     "feedback": [
         {
             "index": 0,
-            "modification": "2" // verde,
+            "modification": 2
         },
         {
             "index": 1,
-            "modification": "1" // amarelo,
+            "modification": 1
         },
         {
             "index": 2,
-            "modification": "1" // amarelo,
+            "modification": 1 
         },
         {
             "index": 4,
-            "modification": "0" // cinza,
+            "modification": 0
         }
     ],
 
@@ -114,14 +114,14 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 401  <span style="color:lightblue"> (Jogo não iniciado) </span>
 ```json
 {
-    "message": 401 // "Jogo não iniciado.
+    "status_code": 401 
 }
 ```
 
 402 <span style="color:lightblue"> (Necessário Parâmetro) </span>
 ```json
 {
-    "message": 402, // "Necessário Parâmetro.
+    "status_code": 402, 
     "remaining_attempts": quantidade de tentativas restantes
 }
 ```
@@ -129,7 +129,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 403  <span style="color:lightblue"> (Tamanho Incorreto) </span>
 ```json
 {
-    "message": 403, // "Tamanho Incorreto.
+    "status_code": 403,
     "remaining_attempts": quantidade de tentativas restantes
 }
 ```
@@ -137,7 +137,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 404  <span style="color:lightblue"> (Palavra Inexistente) </span>
 ```json
 {
-    "message": 404, // "Palavra Inexistente.
+    "status_code": 404, 
     "remaining_attempts": quantidade de tentativas restantes
 }
 ```
@@ -145,7 +145,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 405  <span style="color:lightblue"> (Palavra Repetida) </span>
 ```json
 {
-    "message": 405, // "Palavra Repetida.
+    "status_code": 405, 
     "remaining_attempts": quantidade de tentativas restantes
 }
 ```
@@ -159,7 +159,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 ```json
 
 {
-    "message": "204" // "Lista de Palavras já digitadas.
+    "status_code": "204" 
 }
 
 ```
@@ -169,7 +169,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 499  <span style="color:lightblue"> (Requisição Inválida) </span>
 ```json
 {
-    "message": 499, // "Requisição Inválida.
+    "status_code": 499, 
     "remaining_attempts": quantidade de tentativas restantes
 }
 ```
