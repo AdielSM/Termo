@@ -1,4 +1,4 @@
-#pylint: disable= W0238
+#pylint: disable= W0238 C0103 C0301
 
 from time import sleep
 from enum import Enum
@@ -151,29 +151,70 @@ class Client:
 
 
     def __print_welcome_message(self) -> None:
+        """
+        Exibe uma mensagem de boas-vindas.
+        """
         print(f"\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}")
 
 
     def __get_username(self) -> str:
+        """
+        Solicita ao usuário um nickname.
+        """
         return input('Digite seu nome: ')
 
 
     def __get_user_command(self) -> str:
+        """
+        Solicita ao usuário um comando.
+        """
         return input('Termo> ')
 
 
     def __print_exit_message(self) -> None:
+        """
+        Exibe a mensagem de instrução para caso o jogador deseje encerrar o jogo.
+        """
         print("\033[90mPressione Ctrl + C para sair do jogo!\033[0m")
 
 
     def __print_end_game_message(self) -> None:
+        """
+        Exibe uma mensagem de fim de jogo.
+        """
         print("\nA rodada acabou! Deseja continuar jogando?")
 
 
     def __print_goodbye_message(self) -> None:
+        """
+        Exibe uma mensagem de despedida.
+        """
         print(f'\nAté a próxima, {self.__user_name}! Obrigado por jogar o Termo!')
 
+
+    def __handle_keyboard_interrupt(self) -> None:
+        """
+        Lida com a interrupção do teclado.
+
+        Fecha o socket e encerra o programa com uma mensagem.
+
+        """
+        print(f"\nObrigado por jogar {self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
+        self.__sock.close()
+        sys.exit(0)
+
+
     def __create_request_body(self, command: str, parameter: Any) -> Dict[str, Any]:
+        """
+        Cria o corpo da requisição com base no comando e parâmetro fornecidos.
+
+        Args:
+            command (str): O comando da requisição.
+            parameter (Any): O parâmetro da requisição.
+
+        Returns:
+            Dict[str, Any]: O corpo da requisição.
+        """
         return {
             "command": command,
             "parameter": parameter
@@ -181,6 +222,12 @@ class Client:
 
 
     def __get_user_end_game_option(self) -> str:
+        """
+        Solicita ao usuário a opção de continuar ou sair do jogo.
+
+        Returns:
+            str: A opção escolhida pelo usuário ('1' para continuar ou '2' para sair).
+        """
         usr_input =  input('Digite 1 para continuar ou 2 para sair: ')
 
         while usr_input not in ['1', '2']:
@@ -190,19 +237,32 @@ class Client:
 
 
     def __return_attempts(self, remaining_attempts) -> str:
+        """
+        Retorna uma string com o número de tentativas restantes ou o número de tentativas até agora.
+
+        Args:
+            remaining_attempts (int): O número de tentativas restantes.
+
+        Returns:
+            str: A string contendo o número de tentativas restantes ou o número de tentativas até agora.
+        """
         if remaining_attempts >= 0:
             return f"Tentativas Restantes: {remaining_attempts}"
         else:
             return f"Número de tentativas até agora: {len(self.__words_stack)}"
 
 
-    def __handle_keyboard_interrupt(self) -> None:
-        print(f"\nObrigado por jogar {self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
-        self.__sock.close()
-        sys.exit(0)
-
-
     def __check_exit_game(self, option) -> bool:
+        """
+        Verifica se o jogo deve ser encerrado com base na opção selecionada.
+
+        Args:
+            option (str): A opção selecionada.
+
+        Returns:
+            bool: True se o jogo deve ser encerrado, False caso contrário.
+        
+        """
         if option == '1':
             self.__game_status = GameStatus.GAME_IN_PROGRESS
             return False
@@ -212,7 +272,17 @@ class Client:
 
 
     def __game_continued_action(self) -> None:
+        """
+        Executa a ação de continuar o jogo.
 
+        Envia uma requisição para o servidor solicitando a continuação do jogo.
+        Caso a requisição seja bem-sucedida, renderiza a resposta do servidor.
+        Caso contrário, exibe uma mensagem de erro.
+
+        Raises:
+            OSError: Ocorre quando há um erro ao enviar ou receber dados pelo socket.
+            json.JSONDecodeError: Ocorre quando há um erro ao decodificar a resposta do servidor.
+        """
         req_body = {
             "command": "continue_game",
             "parameter": None
@@ -235,20 +305,20 @@ class Client:
         print("Ocorreu um erro ao continuar o jogo. Por favor, considere reiniciar")
 
 
-    def __format_output(self, word, list) -> str:
+    def __format_output(self, word, format_instructions) -> str:
         """
         Formata a palavra com base na lista de codificação fornecida.
 
         Args:
             word (str): A palavra a ser formatada.
-            list (list): A lista que contém as instruções de formatação.
+            format_instructions (list): A lista que contém as instruções de formatação.
 
         Returns:
             str: A string formatada.
         """
-        if word and list:
+        if word and format_instructions:
             output = ''
-            for index, items in enumerate(list):
+            for index, items in enumerate(format_instructions):
                 if items == 2:
                     output += "\033[92m" + word[index] + "\033[0m"
                 elif items == 1:
@@ -261,6 +331,13 @@ class Client:
         return
 
     def __secret_word_animation(self, word) -> None:
+        """
+        Realiza uma animação para exibir a palavra secreta.
+
+        Args:
+            word (str): A palavra secreta a ser exibida.
+
+        """
         transformed_word = ['_' for _ in word]
 
         print("Você não conseguiu acertar a palavra secreta!\nA palavra era:\n")
@@ -272,6 +349,15 @@ class Client:
 
 
     def __render_response(self, response_status: int, **extra_info):
+        """
+        Renderiza a resposta com base no status recebido.
+
+        Args:
+            response_status (int): O status da resposta.
+            **extra_info: Informações adicionais.
+
+
+        """
         if 200 <= response_status < 400:
             self.__handle_successful_cases(response_status, **extra_info)
 
@@ -280,7 +366,14 @@ class Client:
 
 
     def __handle_successful_cases(self, response_status, **extra_info):
+        """
+        Lida com os casos de sucesso com base no código de status da resposta.
 
+        Args:
+            response_status (int): O código de status da resposta.
+            **extra_info: Informações adicionais passadas como argumentos de palavra-chave.
+
+        """
         remaining_attempts = extra_info.get("remaining_attempts")
         format_output = extra_info.get("format_output")
         secret_word = extra_info.get("secret_word")
@@ -319,7 +412,14 @@ class Client:
                 print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!")
 
     def __handle_error_cases(self, response_status, **remaining_attempts):
+        """
+        Manipula os casos de erro de resposta do servidor.
 
+        Args:
+            response_status (int): O código de status da resposta.
+            remaining_attempts (dict): Dicionário contendo as tentativas restantes.
+
+        """
         remaining_attempts = remaining_attempts.get("remaining_attempts")
 
         match response_status:
@@ -406,6 +506,7 @@ class Client:
         else:
             self.__render_response(response_status, remaining_attempts=remaining_attempts)
 
+
     def run(self) -> None:
         """
         Executa a aplicação cliente.
@@ -418,9 +519,6 @@ class Client:
             KeyboardInterrupt: Se o usuário interromper o programa.
             ValueError: Se um valor inválido for inserido pelo usuário.
             Exception: Se ocorrer qualquer outra exceção.
-
-        Returns:
-            None
         """
         try:   
             self.__sock = self.__connect_to_server()  
