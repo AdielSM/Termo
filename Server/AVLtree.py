@@ -19,9 +19,9 @@ class AVLtree:
 
     Métodos:
         insert(root: Optional[Node], key: str) -> Node: Insere uma nova chave na árvore AVL.
-        preOrder(): Imprime os elementos da árvore AVL em uma travessia pré-ordem.
-        inOrder(): Imprime os elementos da árvore AVL em uma travessia em ordem.
-        postOrder(): Imprime os elementos da árvore AVL em uma travessia pós-ordem.
+        pre_order(): Imprime os elementos da árvore AVL em uma travessia pré-ordem.
+        in_order(): Imprime os elementos da árvore AVL em uma travessia em ordem.
+        post_order(): Imprime os elementos da árvore AVL em uma travessia pós-ordem.
         is_present(key: str) -> bool: Verifica se uma determinada chave está presente na árvore AVL.
         search(key: str) -> Optional[Node]: Procura por uma determinada chave na árvore AVL e retorna o nó correspondente.
         add_elements(lst: List[str]) -> None: Adiciona uma lista de elementos à árvore AVL.
@@ -36,37 +36,37 @@ class AVLtree:
     def __len__(self) -> int:
         return len(self.__list)
     
-    def __getHeight(self, node: Optional[Node]) -> int:
+    def __get_height(self, node: Optional[Node]) -> int:
         if not node:
             return 0
         return node.height
 
-    def __getBalance(self, node: Optional[Node]) -> int:
+    def __get_balance(self, node: Optional[Node]) -> int:
         if not node:
             return 0
-        return self.__getHeight(node.left) - self.__getHeight(node.right)
+        return self.__get_height(node.left) - self.__get_height(node.right)
 
-    def rightRotate(self, y: Node) -> Node:
+    def right_rotate(self, y: Node) -> Node:
         x: Node = y.left
         T2: Optional[Node] = x.right
 
         x.right = y
         y.left = T2
 
-        y.height = 1 + max(self.__getHeight(y.left), self.__getHeight(y.right))
-        x.height = 1 + max(self.__getHeight(x.left), self.__getHeight(x.right))
+        y.height = 1 + max(self.__get_height(y.left), self.__get_height(y.right))
+        x.height = 1 + max(self.__get_height(x.left), self.__get_height(x.right))
 
         return x
 
-    def leftRotate(self, x: Node) -> Node:
+    def left_rotate(self, x: Node) -> Node:
         y: Node = x.right
         T2: Optional[Node] = y.left
 
         y.left = x
         x.right = T2
 
-        x.height = 1 + max(self.__getHeight(x.left), self.__getHeight(x.right))
-        y.height = 1 + max(self.__getHeight(y.left), self.__getHeight(y.right))
+        x.height = 1 + max(self.__get_height(x.left), self.__get_height(x.right))
+        y.height = 1 + max(self.__get_height(y.left), self.__get_height(y.right))
 
         return y
 
@@ -82,55 +82,55 @@ class AVLtree:
         else:
             return root  # Ignora chaves duplicadas
 
-        root.height = 1 + max(self.__getHeight(root.left), self.__getHeight(root.right))
+        root.height = 1 + max(self.__get_height(root.left), self.__get_height(root.right))
 
-        balance = self.__getBalance(root)
+        balance = self.__get_balance(root)
 
         # Casos de rotação
         if balance > 1:
             if key < root.left.key:
-                return self.rightRotate(root)
+                return self.right_rotate(root)
             else:
-                root.left = self.leftRotate(root.left)
-                return self.rightRotate(root)
+                root.left = self.left_rotate(root.left)
+                return self.right_rotate(root)
 
         if balance < -1:
             if key > root.right.key:
-                return self.leftRotate(root)
+                return self.left_rotate(root)
             else:
-                root.right = self.rightRotate(root.right)
-                return self.leftRotate(root)
+                root.right = self.right_rotate(root.right)
+                return self.left_rotate(root)
 
         return root
     
 
-    def preOrder(self) -> None:
-        self.__preOrder(self.__root)
+    def pre_order(self) -> None:
+        self.__pre_order(self.__root)
 
-    def __preOrder(self, root: Optional[Node]) -> None:
+    def __pre_order(self, root: Optional[Node]) -> None:
         if root:
             print(f'{root.key} ', end="")
-            self.__preOrder(root.left)
-            self.__preOrder(root.right)
+            self.__pre_order(root.left)
+            self.__pre_order(root.right)
             
             
-    def inOrder(self) -> None:
-        self.__inOrder(self.__root)
+    def in_order(self) -> None:
+        self.__in_order(self.__root)
     
-    def __inOrder(self, root: Optional[Node]) -> None:
+    def __in_order(self, root: Optional[Node]) -> None:
         if root:
-            self.__inOrder(root.left)
+            self.__in_order(root.left)
             print(f'{root.key} ',end="")
-            self.__inOrder(root.right)
+            self.__in_order(root.right)
             
             
-    def postOrder(self) -> None:
-        self.__postOrder(self.__root)        
+    def post_order(self) -> None:
+        self.__post_order(self.__root)        
     
-    def __postOrder(self, root: Optional[Node]) -> None:
+    def __post_order(self, root: Optional[Node]) -> None:
         if root:
-            self.__postOrder(root.left)
-            self.__postOrder(root.right)
+            self.__post_order(root.left)
+            self.__post_order(root.right)
             print(f'{root.key} ',end="")
             
 
@@ -157,5 +157,3 @@ class AVLtree:
 
     def get_random(self) -> str:
         return self.__list[randint(0, len(self.__list)-1)]
-    
-

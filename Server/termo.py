@@ -1,144 +1,159 @@
 from typing import List, Dict, Union
 from enum import Enum
 
+from utils import LinkedStack, summary_protocol
+from .words_loader import load_words
+from .termo_words_loader import load_termo_words
 from .AVLtree import AVLtree
-from utils import PilhaEncadeada, sumario_protocolo
-from .palavrasRepositorio import carregarPalavras, carregarPalavrasTermo
 
-class Estado(Enum):
-    Sem_jogo = 1
-    Jogo_com_tentativa = 2
-    Jogo_sem_tentativa = 3
-    Derrota = 4
-    Vitoria = 5
+class TermoStatus(Enum):
+    """
+    Enumeração que representa os possíveis estados do jogo.
+    
+    - NO_GAME: Estado inicial, quando não há jogo em andamento.
+    - GAME_WITH_TRY: Estado quando há um jogo em andamento e o jogador fez pelo menos uma tentativa.
+    - GAME_WITHOUT_TRY: Estado quando há um jogo em andamento e o jogador ainda não fez nenhuma tentativa.
+    - DEFEAT: Estado quando o jogador perdeu o jogo.
+    - VICTORY: Estado quando o jogador venceu o jogo.
+    """
+    NO_GAME = 1
+    GAME_WITH_TRY = 2
+    GAME_WITHOUT_TRY = 3
+    DEFEAT = 4
+    VICTORY = 5
 
 class Termo:
     """
-    Classe que representa o jogo Termo.
+    Classe que representa o jogo termo.
 
-    Attributes:
-        bancoPalavras (AVLtree): Árvore AVL que armazena o banco de palavras.
-        bancoPalavrasTermo (AVLtree): Árvore AVL que armazena o banco de palavras específicas do jogo Termo.
-        protocolo (sumario_protocolo): Objeto que contém o protocolo do jogo Termo.
+    Atributos:
+        word_bank (AVLtree): Árvore AVL que armazena o banco de palavras.
+        termo_word_bank (AVLtree): Árvore AVL que armazena o banco de palavras específico do jogo termo.
+        protocol (summary_protocol): Objeto que contém o protocolo do jogo termo.
     """
 
-    bancoPalavras: AVLtree = AVLtree()
-    bancoPalavrasTermo: AVLtree = AVLtree()
-    protocolo = sumario_protocolo()
+    word_bank: AVLtree = AVLtree()
+    termo_word_bank: AVLtree = AVLtree()
+    protocol = summary_protocol()
 
-    palavras = carregarPalavras()  # Carrega as palavras do palavrasRepositorio
-    bancoPalavras.add_elements(palavras)
-    del palavras
+    words = load_words()  # Carrega as palavras do wordRepository
+    word_bank.add_elements(words)
+    del words
 
-    palavrasTermo = carregarPalavrasTermo()  # Carrega as palavras do palavrasRepositorio
-    bancoPalavrasTermo.add_elements(palavrasTermo)
-    del palavrasTermo
+    termo_words = load_termo_words()  # Carrega as palavras do wordRepository
+    termo_word_bank.add_elements(termo_words)
+    del termo_words
 
-    def __init__(self, qtdTentativas: int = 5, tentativasIlimitadas:bool = False) -> None:
+    def __init__(self, attempts_number: int = 5, unlimited_attempts:bool = False) -> None:
         """
-        Inicializa uma instância da classe Termo.
+        Inicializa uma instância da classe termo.
 
         Args:
-            qtdTentativas (int): A quantidade de tentativas disponíveis.
-            tentativasIlimitadas (bool): Indica se o jogo terá tentativas ilimitadas.
+            attempts_number (int): O número de tentativas disponíveis.
+            unlimited_attempts (bool): Indica se o jogo terá tentativas ilimitadas.
 
         Returns:
             None
         """
-        self.__estadoDoJogo: Estado = Estado.Sem_jogo
+        self.__game_status: TermoStatus = TermoStatus.NO_GAME
 
-        self.iniciarJogo(qtdTentativas, tentativasIlimitadas)
+        self.start_game(attempts_number, unlimited_attempts)
 
-    def iniciarJogo(self, qtdTentativas: int = 5, tentativasIlimitadas: bool = False) -> None:
+    def start_game(self, attempts_number: int = 5, unlimited_attempts: bool = False) -> None:
         """
-        Inicia o jogo com a quantidade de tentativas especificada.
+        Inicia o jogo com o número especificado de tentativas.
 
         Args:
-            qtdTentativas (int): A quantidade de tentativas disponíveis.
-            tentativasIlimitadas (bool): Indica se o jogo terá tentativas ilimitadas.
+            attempts_number (int): O número de tentativas disponíveis.
+            unlimited_attempts (bool): Indica se o jogo terá tentativas ilimitadas.
 
         Returns:
             None
         """
-        self.__palavra: str = self.__escolherPalavraAleatoria()
-        self.__dictPalavra: Dict[str, List[int]] = self.__criarDictPalavra(self.__palavra)
-        self.__tentativasIlimitadas = tentativasIlimitadas
-        self.__qtdTentativasRestantes: int = qtdTentativas if not tentativasIlimitadas else -1        
-        self.__pilhaPalavras: PilhaEncadeada = PilhaEncadeada()
-        self.__estadoDoJogo: Estado = Estado.Jogo_com_tentativa
-        
+        self.__secret_word: str = self.__choose_random_word()
+        self.__dict_secret_word: Dict[str, List[int]] = self.__create_word_dict(self.__secret_word)
+        self.__unlimited_attempts = unlimited_attempts
+        self.__remaining_attempts: int = attempts_number if not unlimited_attempts else -1
+        self.__words_stack: LinkedStack = LinkedStack()
+        if not unlimited_attempts:
+            self.__game_status = TermoStatus.GAME_WITHOUT_TRY
+        else:
+            self.__game_status = TermoStatus.GAME_WITH_TRY
+
     @property
-    def palavra(self) -> str:
+    def word(self) -> str:
         """
         Retorna a palavra do jogo.
 
         Returns:
             str: A palavra do jogo.
         """
-        return self.__palavra
+        return self.__secret_word
 
     @property
-    def qtdTentativasRestantes(self) -> int:
+    def remaining_attempts(self) -> int:
         """
-        Retorna a quantidade de tentativas restantes.
+        Retorna o número de tentativas restantes.
 
         Returns:
-            int: A quantidade de tentativas restantes.
+            int: O número de tentativas restantes.
         """
-        return self.__qtdTentativasRestantes
+        return self.__remaining_attempts
 
-    def getPalavrasTermo(self) -> List[str]:
+    def get_termo_words(self) -> List[str]:
         """
-        Retorna a lista de palavras específicas do jogo Termo.
+        Retorna a lista de palavras específicas do jogo termo.
 
         Returns:
-            List[str]: A lista de palavras específicas do jogo Termo.
+            List[str]: A lista de palavras específicas do jogo termo.
         """
-        return Termo.palavrasTermo.inOrder()
+        return Termo.termo_word_bank.in_order()
 
-    def jogoNaoIniciado(self) -> bool:
+    def game_not_started(self) -> bool:
         """
         Verifica se o jogo não foi iniciado.
 
         Returns:
             bool: True se o jogo não foi iniciado, False caso contrário.
         """
-        return self.__estadoDoJogo == Estado.Sem_jogo
+        return self.__game_status == TermoStatus.NO_GAME
 
-    def __escolherPalavraAleatoria(self) -> str:
+    def __choose_random_word(self) -> str:
         """
-        Escolhe uma palavra aleatória do banco de palavras específicas do jogo Termo.
+        Escolhe uma palavra aleatória do banco de palavras específico do jogo termo.
 
         Returns:
             str: A palavra escolhida aleatoriamente.
         """
-        palavra: str = Termo.bancoPalavrasTermo.get_random()
-        return palavra
+        word: str = Termo.termo_word_bank.get_random()
+        return word
 
-    def __criarDictPalavra(self, palavra: str) -> Dict[str, List[int]]:
+    def __create_word_dict(self, letters: str) -> Dict[str, List[int]]:
         """
-        Cria um dicionário onde as chaves são as letras da palavra e os valores são as posições em que as letras aparecem na palavra.
+        Cria um dicionário onde as chaves são as letras da palavra e os valores são as posições 
+        onde as letras aparecem na palavra.
 
         Args:
-            palavra (str): A palavra para criar o dicionário.
+            letters (str): A palavra para criar o dicionário.
 
         Returns:
-            Dict[str, List[int]]: O dicionário onde as chaves são as letras da palavra e os valores são as posições em que as letras aparecem na palavra.
+            Dict[str, List[int]]: O dicionário onde as chaves são as letras da palavra e os valores 
+            são as posições onde as letras aparecem na palavra.
         """
-        dict_palavra: Dict[str, List[int]] = {}
-        for i, letra in enumerate(palavra):
-            if letra not in dict_palavra:
-                dict_palavra[letra] = [i]
+        word_dict: Dict[str, List[int]] = {}
+        for i, letter in enumerate(letters):
+            if letter not in word_dict:
+                word_dict[letter] = [i]
             else:
-                dict_palavra[letra].append(i)
-        return dict_palavra
+                word_dict[letter].append(i)
+        return word_dict
 
-    def checkWord(self, palavra: str) -> Union[int, List[int]]:
+    def check_word(self, word: str) -> Union[int, List[int]]:
         """
         Verifica se a palavra fornecida é válida de acordo com as regras do jogo.
 
         Args:
-            palavra (str): A palavra a ser verificada.
+            word (str): A palavra a ser verificada.
 
         Returns:
             Union[int, List[int]]: O feedback da palavra ou um código de erro.
@@ -148,57 +163,55 @@ class Termo:
 
         """
         # Verifica se o estado do jogo permite uma tentativa
-        if self.__estadoDoJogo != Estado.Jogo_com_tentativa:
+        if self.__game_status != TermoStatus.GAME_WITH_TRY:
             raise ValueError("O jogo não está no estado de tentativa")
 
         # Verifica se a palavra é igual à palavra do jogo
-        if palavra == self.__palavra:
-            self.__estadoDoJogo = Estado.Vitoria
-            return Termo.protocolo["PALAVRA_CORRETA"]
+        if word == self.__secret_word:
+            self.__game_status = TermoStatus.VICTORY
+            return Termo.protocol["PALAVRA_CORRETA"]
 
         # Verifica se a palavra tem o mesmo tamanho que a palavra do jogo
-        elif len(palavra) != len(self.__palavra):
-            return Termo.protocolo["TAMANHO_INCORRETO"]
+        elif len(word) != len(self.__secret_word):
+            return Termo.protocol["TAMANHO_INCORRETO"]
 
         # Verifica se a palavra está presente no banco de palavras
-        elif not Termo.bancoPalavras.is_present(palavra) and not Termo.bancoPalavrasTermo.is_present(palavra):
-            return Termo.protocolo["PALAVRA_INEXISTENTE"]
+        elif not (Termo.word_bank.is_present(word) or Termo.termo_word_bank.is_present(word)):
+            return Termo.protocol["PALAVRA_INEXISTENTE"]
 
         # Verifica se a palavra já foi tentada antes
-        elif self.__pilhaPalavras.busca(palavra):
-            return Termo.protocolo["PALAVRA_REPETIDA"]
+        if self.__words_stack.search(word):
+            return Termo.protocol["PALAVRA_REPETIDA"]
 
         # Gera o feedback para a palavra
-        feedback = self.__generateFeedback(palavra)
+        feedback = self.__generate_feedback(word)
 
-        if not self.__tentativasIlimitadas:
-            self.__qtdTentativasRestantes -= 1
-        self.__pilhaPalavras.empilha(palavra)
+        if not self.__unlimited_attempts:
+            self.__remaining_attempts -= 1
+        self.__words_stack.stack_up(word)
 
         # Verifica se o jogo ainda tem tentativas restantes
-        if self.__qtdTentativasRestantes == 0 and not self.__tentativasIlimitadas:
-            self.__estadoDoJogo = Estado.Jogo_sem_tentativa
+        if self.__remaining_attempts == 0 and not self.__unlimited_attempts:
+            self.__game_status = TermoStatus.GAME_WITHOUT_TRY
 
         return feedback
 
-    def __generateFeedback(self, palavra: str) -> List[int]:
+    def __generate_feedback(self, word: str) -> List[int]:
         """
         Gera o feedback para uma palavra com base na palavra do jogo.
 
         Args:
-            palavra (str): A palavra a ser verificada.
+            word (str): A palavra a ser verificada.
 
         Returns:
             List[int]: O feedback da palavra.
         """
         feedback: List[int] = []
-        for index, letra in enumerate(palavra):
-            if letra in self.__dictPalavra and index in self.__dictPalavra[letra]:
+        for index, letter in enumerate(word):
+            if letter in self.__dict_secret_word and index in self.__dict_secret_word[letter]:
                 feedback.append(2)
-            elif letra in self.__dictPalavra and index not in self.__dictPalavra[letra]:
+            elif letter in self.__dict_secret_word and index not in self.__dict_secret_word[letter]:
                 feedback.append(1)
             else:
                 feedback.append(0)
         return feedback
-    
-    
