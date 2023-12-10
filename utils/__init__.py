@@ -1,3 +1,4 @@
-from .sumario_protocolo import sumario_protocolo
+#pylint: disable=E0401
+from .summary_protocol import summary_protocol
 from .server_config import server_config
-from .pilhaEncadeada import PilhaEncadeada
+from .linked_stack import LinkedStack
