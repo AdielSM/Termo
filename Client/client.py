@@ -2,10 +2,10 @@
 
 from time import sleep
 from enum import Enum
+from typing import Any, Dict, Tuple
 import socket
 import json
 import sys
-from typing import Tuple, Dict, Any, Optional
 from prettytable import PrettyTable
 
 from utils import server_config, LinkedStack
@@ -27,11 +27,12 @@ class Client:
     def __init__(self) -> None:
         self.__HOST: str = '127.0.0.1'
         self.__MSG_SIZE, self.__PORT = server_config()
-        self.__sock: Optional[socket.socket] = None
+        self.__sock: socket.socket = None
         self.__game_status: GameStatus = GameStatus.NO_GAME
-        self.__user_name: Optional[str] = None
+        self.__user_name: str = None
         self.__words_stack = LinkedStack()
         self.__table = PrettyTable()
+        self.__scores_table = PrettyTable()
 
     def __connect_to_server(self) -> socket.socket:
         """
@@ -63,7 +64,7 @@ class Client:
         raise socket.error("Não foi possível conectar ao servidor. Tente reiniciar o cliente.")
 
 
-    def __render_table(self) -> None:
+    def __render_menu_table(self) -> None:
         """
         Renderiza uma tabela com as opções disponíveis para o usuário.
 
@@ -87,6 +88,28 @@ class Client:
         print("")
         print(self.__table)
 
+
+    def __render_score_table(self, rounds_scores:dict, total_score:float) -> str:
+        """
+        Renderiza uma tabela com os scores das rodadas.
+
+        Args:
+            self: A referência para a instância da classe.
+
+        """
+        self.__scores_table.clear_rows()
+        self.__scores_table.title = f"Pontuação de {self.__user_name}"
+        self.__scores_table.field_names = list(rounds_scores.keys())
+        self.__scores_table.add_row(list(rounds_scores.values()))
+        self.__scores_table.add_column("Pontuação Total", [total_score])
+    
+        self.__scores_table.align["Rodada"] = "c"
+        self.__scores_table.align["Pontuação Total"] = "c"
+
+        print("")
+        print(self.__scores_table)
+
+
     def __process_user_command(self, user_command: str) -> Tuple[str, Any]:
         """
         Processa o comando do usuário e retorna uma tupla contendo 
@@ -103,7 +126,7 @@ class Client:
         """
         if user_command == '1':
             command = "start_game"
-            parameter = None
+            parameter = self.__user_name
 
         elif user_command == '2':
             command = "exit_game"
@@ -248,8 +271,8 @@ class Client:
         """
         if remaining_attempts >= 0:
             return f"Tentativas Restantes: {remaining_attempts}"
-        else:
-            return f"Número de tentativas até agora: {len(self.__words_stack)}"
+
+        return f"Número de tentativas até agora: {len(self.__words_stack)}"
 
 
     def __check_exit_game(self, option) -> bool:
@@ -388,6 +411,7 @@ class Client:
 
             case 202:
                 print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts)}')
+                self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
                 self.__words_stack.clear()
 
             case 203:
@@ -398,6 +422,7 @@ class Client:
                 if remaining_attempts == 0:
                     self.__words_stack.clear()
                     self.__secret_word_animation(secret_word)
+                    self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
 
             case 204:
                 if self.__words_stack:
@@ -407,9 +432,11 @@ class Client:
 
             case 205:
                 print("Jogo reiniciado com sucesso")
+                self.__words_stack.clear()
 
             case 206:
                 print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!")
+
 
     def __handle_error_cases(self, response_status, **remaining_attempts):
         """
@@ -469,7 +496,7 @@ class Client:
             self.__game_status = GameStatus.NO_GAME
 
         elif response_status == 202:
-            self.__render_response(response_status, remaining_attempts=remaining_attempts)
+            self.__render_response(response_status, remaining_attempts=remaining_attempts, rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"])
 
             self.__print_end_game_message()
             option = self.__get_user_end_game_option()
@@ -487,8 +514,7 @@ class Client:
             if remaining_attempts != 0:
                 self.__render_response(response_status, format_output=color_str, remaining_attempts=remaining_attempts)
             else:
-                self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"],
-                                remaining_attempts=remaining_attempts)
+                self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"], rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"],remaining_attempts=remaining_attempts)
 
                 self.__print_end_game_message()
                 option = self.__get_user_end_game_option()
@@ -521,13 +547,13 @@ class Client:
             Exception: Se ocorrer qualquer outra exceção.
         """
         try:   
-            self.__sock = self.__connect_to_server()  
+            self.__sock = self.__connect_to_server() 
             self.__print_welcome_message()
             self.__user_name = self.__get_username()
 
             while True:
                 try:
-                    self.__render_table()
+                    self.__render_menu_table()
                     self.__print_exit_message()
                     user_cmd = self.__get_user_command()
 
@@ -538,6 +564,7 @@ class Client:
                     response_status = response_data["status_code"]
 
                     self.__handle_response_status(response_status, response_data, parameter)
+
 
                 except KeyboardInterrupt:
                     self.__handle_keyboard_interrupt()
