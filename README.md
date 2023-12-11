@@ -85,7 +85,6 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 - [Socket](https://docs.python.org/3/library/socket.html)
 - [Threading](https://docs.python.org/3/library/threading.html)
 - [Json](https://docs.python.org/3/library/json.html)
-- [Numpy](https://numpy.org/)
 
 ## 👨‍💻 Autores
 
