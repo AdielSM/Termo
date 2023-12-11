@@ -15,7 +15,7 @@ class PlayerFactory:
     Classe responsável por criar um player ativo.
     """
     @staticmethod
-    def make_player_active(cliente, con) -> Player:
+    def make_player_active(cliente, con, user_name) -> Player:
         """
         Cria um player ativo com base no cliente e conexão fornecidos.
 
@@ -26,7 +26,7 @@ class PlayerFactory:
         Returns:
             Um objeto player ativo criado com base nosArgs fornecidos.
         """
-        player = Player(cliente, con)
+        player = Player(cliente, con, user_name)
         player.game = Termo()
         return player
 
@@ -59,6 +59,7 @@ class Server:
                 sys.exit(1)
             self.__sock.listen(10)
 
+
     @classmethod
     def get_instance(cls) -> 'Server':
         """
@@ -72,7 +73,7 @@ class Server:
             cls._instance = Server()
         return cls._instance
 
-    def __make_player_active(self, client, con) -> Player:
+    def __make_player_active(self, client, con, user_name) -> Player:
         """
         Cria um player ativo com base no cliente e conexão fornecidos.
 
@@ -84,7 +85,7 @@ class Server:
             Player: O player ativo criado.
 
         """
-        player = PlayerFactory.make_player_active(client, con)
+        player = PlayerFactory.make_player_active(client, con, user_name)
 
         with self.__active_players_lock:
             self.__active_players.append(player)
@@ -126,7 +127,7 @@ class Server:
                 return player
         return None
 
-    def __start_game(self, current_player, client, con):
+    def __start_game(self, current_player, client, con, parameter):
         """
         Inicia um novo jogo para o jogador atual.
 
@@ -144,19 +145,18 @@ class Server:
             }
 
         else:
-            current_player = self.__make_player_active(client, con)
+            current_player = self.__make_player_active(client, con, parameter)
             return {
                 "status_code": self.__protocol['JOGO_INICIADO']
             }
 
 
-    def __restart_game(self, client, con):
+    def __restart_game(self, current_player):
         """
         Reinicia o jogo para o cliente especificado.
 
         Args:
-            client (objeto): O cliente que deseja reiniciar o jogo.
-            con (objeto): A conexão com o cliente.
+            current_player (Player): O player atual.
 
         Returns:
             dict: Um dicionário contendo o código de status da operação.
@@ -166,13 +166,13 @@ class Server:
 
         """
         try:
-            self.__remove_player_active(client)
-            self.__make_player_active(client, con)
+            current_player.restart()
 
             return {
                 "status_code" : self.__protocol['JOGO_REINICIADO'],
             }
-        except PlayerNotFoundException:
+
+        except AttributeError:
             return {
                 "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
@@ -248,19 +248,26 @@ class Server:
         elif not parameter:
             return {
                 "status_code" : self.__protocol['NECESSARIO_PARAMETRO'],
+                "remaining_attempts" : current_player.game.remaining_attempts
             }
 
         else:
             feedback = current_player.game.check_word(parameter)
-            print(feedback)
+
+            if not current_player.round_start_time:
+                current_player.turn_start()
+
 
             if isinstance(feedback,int):
 
                 if feedback == 202:
-                    current_player.add_score(current_player.game.remaining_attempts, 3)# todo: fazer a lógica do tempo
+                    current_player.add_score(current_player.game.remaining_attempts)
+
                     return {
                         "status_code" : self.__protocol['PALAVRA_CORRETA'],
-                        "remaining_attempts" : current_player.game.remaining_attempts
+                        "remaining_attempts" : current_player.game.remaining_attempts,
+                        "rounds_scores" : current_player.rounds_scores,
+                        "total_score" : current_player.total_score
                     }
 
                 else:
@@ -281,11 +288,15 @@ class Server:
 
                 else:
 
+                    current_player.add_score(current_player.game.remaining_attempts)
+
                     return {
                         "status_code" : self.__protocol['PALAVRA_INCORRETA'],
                         "word_encoded" : feedback,
                         "remaining_attempts" : current_player.game.remaining_attempts,
-                        "secret_word" : current_player.game.secret_word
+                        "secret_word" : current_player.game.secret_word,
+                        "rounds_scores" : current_player.rounds_scores,
+                        "total_score" : current_player.total_score
                     }
 
 
@@ -309,6 +320,7 @@ class Server:
             return {
                 "status_code" : self.__protocol['LISTAR_PALAVRAS'],
             }
+            
 
 
     def __invalid_command(self, current_player):
@@ -351,7 +363,7 @@ class Server:
         """
         try:
             data = json.loads(msg.decode())
-            print('Conectei com',client, data)
+            print('Conectei com', client, data)
 
             command = data.get('command').lower()
             parameter = data.get('parameter')
@@ -360,10 +372,10 @@ class Server:
 
             match command:
                 case "start_game":
-                    data = self.__start_game(current_player, client, con)
+                    data = self.__start_game(current_player, client, con, parameter)
 
                 case "restart_game":
-                    data = self.__restart_game(client, con)
+                    data = self.__restart_game(current_player)
 
                 case "continue_game":
                     data = self.__continue_game(current_player)
