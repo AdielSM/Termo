@@ -1,4 +1,4 @@
-TERMO_WORD_BANK_URL = 'words_bank/bdTermo.txt'
+TERMO_WORD_BANK_URL = 'words_bank/bd_termo.txt'
 
 def load_termo_words() -> list:
     """

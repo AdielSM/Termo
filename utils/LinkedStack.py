@@ -170,21 +170,16 @@ class LinkedStack:
         raise StackException('A pilha está vazia')
 
     def __str__(self):
-        """Método que Returns uma string contendo os elementos da pilha
+        """Método que retorna uma string contendo os elementos da pilha
             separados por vírgulas e envolvidos em colchetes. A ordem de exibição é
             da base para o topo da pilha.
         """
         cursor = self.__head
-        first = True
-        s = ''
+        elements = []
         while cursor is not None:
-            if first:
-                s += f'{cursor.data}'
-                first = False
-            else:
-                s += f', {cursor.data}'
+            elements.append(cursor.data)
             cursor = cursor.next
-        return s
+        return ', '.join(map(str, reversed(elements)))
 
     def clear(self):
         """
