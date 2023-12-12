@@ -24,6 +24,8 @@ class Client:
     """
         Inicializa a classe Client.
     """
+
+    SHOW_TABLE_INPUT = "TABELA"
     def __init__(self) -> None:
         self.__HOST: str = '127.0.0.1'
         self.__MSG_SIZE, self.__PORT = server_config()
@@ -33,6 +35,7 @@ class Client:
         self.__words_stack = LinkedStack()
         self.__table = PrettyTable()
         self.__scores_table = PrettyTable()
+        self.__show_table = True
 
     def __connect_to_server(self) -> socket.socket:
         """
@@ -85,7 +88,6 @@ class Client:
         self.__table.align["Opção"] = "l"
         self.__table.align["Descrição"] = "l"
 
-        print("")
         print(self.__table)
 
 
@@ -191,13 +193,16 @@ class Client:
         """
         Solicita ao usuário um comando.
         """
-        return input('Termo> ')
+        return input('\nTermo> ')
 
 
     def __print_exit_message(self) -> None:
         """
         Exibe a mensagem de instrução para caso o jogador deseje encerrar o jogo.
         """
+        state_to_show = "ocultar" if self.__show_table else "exibir"
+        print()
+        print(f"\033[90mDigite {Client.SHOW_TABLE_INPUT} para {state_to_show} a tabela de menu\033[0m")
         print("\033[90mPressione Ctrl + C para sair do jogo!\033[0m")
 
 
@@ -222,7 +227,7 @@ class Client:
         Fecha o socket e encerra o programa com uma mensagem.
 
         """
-        print(f"\nObrigado por jogar {self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
+        print(f"\nObrigado por jogar, {self.__user_name}!\n Foi feito com ❤️ em 🐍\n")
         self.__sock.close()
         sys.exit(0)
 
@@ -553,9 +558,15 @@ class Client:
 
             while True:
                 try:
-                    self.__render_menu_table()
+                    if (self.__show_table):
+                        self.__render_menu_table()
                     self.__print_exit_message()
                     user_cmd = self.__get_user_command()
+
+                    if (user_cmd.strip().upper() == Client.SHOW_TABLE_INPUT):
+                        self.__show_table = not self.__show_table
+                        print()
+                        continue
 
                     command, parameter = self.__process_user_command(user_cmd)
                     req_body = self.__create_request_body(command, parameter)
