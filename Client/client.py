@@ -227,7 +227,7 @@ class Client:
         Fecha o socket e encerra o programa com uma mensagem.
 
         """
-        print(f"\nObrigado por jogar, {self.__user_name}!\n Foi feito com ❤️ em 🐍\n")
+        print(f"\nObrigado por jogar, {self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
         self.__sock.close()
         sys.exit(0)
 
