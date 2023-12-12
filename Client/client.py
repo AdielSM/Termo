@@ -78,10 +78,10 @@ class Client:
         self.__table.clear_rows()
         self.__table.field_names = ["Opção", "Descrição"]
         self.__table.add_row(["1", "Começar um jogo"])
-        self.__table.add_row(["2", "Sair do jogo atual"])
+        self.__table.add_row(["2", "Encerrar jogo atual"])
 
         if self.__game_status != GameStatus.NO_GAME:
-            self.__table.add_row(["3", "Verificar palavra"])
+            self.__table.add_row(["3", "Tentar acertar a palavra secreta"])
             self.__table.add_row(["4", "Listar palavras digitadas nesta rodada"])
             self.__table.add_row(["5", "Reiniciar o jogo atual"])
 
@@ -410,6 +410,11 @@ class Client:
         match response_status:
             case 200:
                 print("Jogo Iniciado com Sucesso")
+                print("\n\033[1mTutorial básico:\033[0m")
+                print("\033[90ma\033[0m - Letra não faz parte da palavra")
+                print("\033[93ma\033[0m - Letra faz parte da palavra, mas em outra posição")
+                print("\033[92ma\033[0m - Letra faz parte da palavra nessa posição")
+                print("Bom jogo!\n")
 
             case 201:
                 print("Jogo Finalizado com Sucesso")
