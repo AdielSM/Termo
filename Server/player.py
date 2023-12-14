@@ -1,7 +1,7 @@
-from .termo import Termo
-from time import time
-
 from typing import Optional
+from time import time
+from .termo import Termo
+
 
 class Player:
     """
@@ -82,7 +82,9 @@ class Player:
             end_time_round = time()
             time_in_seconds = end_time_round - self.__round_start_time
 
-            score = remaining_attempts + remaining_attempts / ( time_in_seconds % 10)
+            time_in_seconds = max(time_in_seconds, 1)
+
+            score = remaining_attempts + 10 / time_in_seconds
 
             self.__total_score += round(score, 2)
             self.__rounds_scores["Rodada " + str(self.__current_round)] = round(score, 2)
