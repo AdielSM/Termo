@@ -77,13 +77,13 @@ class Client:
         """
         self.__table.clear_rows()
         self.__table.field_names = ["Opção", "Descrição"]
-        self.__table.add_row(["1", "Começar um jogo"])
-        self.__table.add_row(["2", "Encerrar jogo atual"])
+        self.__table.add_row(["start", "Começar um jogo"])
+        self.__table.add_row(["stop", "Encerrar jogo atual"])
 
         if self.__game_status != GameStatus.NO_GAME:
-            self.__table.add_row(["3", "Tentar acertar a palavra secreta"])
-            self.__table.add_row(["4", "Listar palavras digitadas nesta rodada"])
-            self.__table.add_row(["5", "Reiniciar o jogo atual"])
+            self.__table.add_row(["try", "Tentar acertar a palavra secreta"])
+            self.__table.add_row(["list", "Listar palavras digitadas nesta rodada"])
+            self.__table.add_row(["reset", "Reiniciar o jogo atual"])
 
         self.__table.align["Opção"] = "l"
         self.__table.align["Descrição"] = "l"
@@ -126,24 +126,24 @@ class Client:
         Raises:
             ValueError: Se o comando fornecido pelo usuário for inválido.
         """
-        if user_command == '1':
+        if user_command == "start":
             command = "start_game"
             parameter = self.__user_name
 
-        elif user_command == '2':
+        elif user_command == "stop":
             command = "exit_game"
             parameter = None
 
-        elif user_command == '3' and self.__game_status == GameStatus.GAME_IN_PROGRESS:
+        elif user_command == "try" and self.__game_status == GameStatus.GAME_IN_PROGRESS:
             command = "check_word"
             user_input = input('Digite uma palavra: ')
             parameter = user_input.lower()
 
-        elif user_command == '4' and self.__game_status == GameStatus.GAME_IN_PROGRESS:
+        elif user_command == "list" and self.__game_status == GameStatus.GAME_IN_PROGRESS:
             command = "list_words"
             parameter = None
 
-        elif user_command == '5' and self.__game_status == GameStatus.GAME_IN_PROGRESS:
+        elif user_command == "reset" and self.__game_status == GameStatus.GAME_IN_PROGRESS:
             command = "restart_game"
             parameter = self.__user_name
 
@@ -186,7 +186,12 @@ class Client:
         """
         Solicita ao usuário um nickname.
         """
-        return input('Digite seu nome: ')
+        user_name = input("Digite seu nome de usuário: ")
+
+        if user_name.strip() == "":
+            return "Anônimo"
+
+        return user_name
 
 
     def __get_user_command(self) -> str:
@@ -264,7 +269,7 @@ class Client:
         return usr_input
 
 
-    def __return_attempts(self, remaining_attempts) -> str:
+    def __return_attempts(self, remaining_attempts, status_code) -> str:
         """
         Retorna uma string com o número de tentativas restantes ou o número de tentativas até agora.
 
@@ -274,7 +279,10 @@ class Client:
         Returns:
             str: A string contendo o número de tentativas restantes ou o número de tentativas até agora.
         """
-        if remaining_attempts >= 0:
+        if remaining_attempts >= 0 and status_code == 202:
+            return f"Tentativas Restantes: {(remaining_attempts) - 1}"
+
+        elif remaining_attempts >= 0:
             return f"Tentativas Restantes: {remaining_attempts}"
 
         return f"Número de tentativas até agora: {len(self.__words_stack)}"
@@ -420,14 +428,14 @@ class Client:
                 print("Jogo Finalizado com Sucesso")
 
             case 202:
-                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts)}')
+                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts, response_status)}')
                 self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
                 self.__words_stack.clear()
 
             case 203:
                 self.__words_stack.stack_up(format_output)
 
-                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts)}")
+                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
 
                 if remaining_attempts == 0:
                     self.__words_stack.clear()
@@ -467,22 +475,22 @@ class Client:
                 print("Jogo não iniciado")
 
             case 402:
-                print(f"É necessário digitar uma palavra\n{self.__return_attempts(remaining_attempts)}")
+                print(f"É necessário digitar uma palavra\n{self.__return_attempts(remaining_attempts, response_status)}")
 
             case 403:
-                print(f"A palavra deve ter 5 letras\n{self.__return_attempts(remaining_attempts)}")
+                print(f"A palavra deve ter 5 letras\n{self.__return_attempts(remaining_attempts, response_status)}")
 
             case 404:
-                print(f'A palavra não existe no dicionário\n{self.__return_attempts(remaining_attempts)}')
+                print(f'A palavra não existe no dicionário\n{self.__return_attempts(remaining_attempts, response_status)}')
 
             case 405:
-                print(f'Palavra já utilizada\n{self.__return_attempts(remaining_attempts)}')
+                print(f'Palavra já utilizada\n{self.__return_attempts(remaining_attempts, response_status)}')
 
             case 499:
                 print("\033[91m Comando inválido\033[0m")
 
                 if remaining_attempts:
-                    print(f'{self.__return_attempts(remaining_attempts)}')
+                    print(f'{self.__return_attempts(remaining_attempts, response_status)}')
 
 
 
@@ -563,12 +571,12 @@ class Client:
 
             while True:
                 try:
-                    if (self.__show_table):
+                    if self.__show_table:
                         self.__render_menu_table()
                     self.__print_exit_message()
                     user_cmd = self.__get_user_command()
 
-                    if (user_cmd.strip().upper() == Client.SHOW_TABLE_INPUT):
+                    if user_cmd.strip().upper() == Client.SHOW_TABLE_INPUT:
                         self.__show_table = not self.__show_table
                         print()
                         continue
