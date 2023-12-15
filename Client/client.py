@@ -434,13 +434,7 @@ class Client:
 
             case 203:
                 self.__words_stack.stack_up(format_output)
-
                 print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
-
-                if remaining_attempts == 0:
-                    self.__words_stack.clear()
-                    self.__secret_word_animation(secret_word)
-                    self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
 
             case 204:
                 if self.__words_stack:
@@ -454,6 +448,14 @@ class Client:
 
             case 206:
                 print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!")
+
+            case 207:
+                self.__words_stack.stack_up(format_output)
+                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
+
+                self.__words_stack.clear()
+                self.__secret_word_animation(secret_word)
+                self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
 
 
     def __handle_error_cases(self, response_status, **remaining_attempts):
@@ -528,25 +530,25 @@ class Client:
 
         elif response_status == 203:
             color_str = self.__format_output(parameter, response_data["word_encoded"])
-
-            if remaining_attempts != 0:
-                self.__render_response(response_status, format_output=color_str, remaining_attempts=remaining_attempts)
-            else:
-                self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"], rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"],remaining_attempts=remaining_attempts)
-
-                self.__print_end_game_message()
-                option = self.__get_user_end_game_option()
-
-                if self.__check_exit_game(option):
-                    self.__print_goodbye_message()
-                    self.__sock.close()
-                    sys.exit(0)
-
-                self.__game_continued_action()
-
+            self.__render_response(response_status, format_output=color_str, remaining_attempts=remaining_attempts)
+                
         elif response_status == 206:
             self.__render_response(response_status, player_name=self.__user_name)
 
+        elif response_status == 207:
+            color_str = self.__format_output(parameter, response_data["word_encoded"])
+
+            self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"], rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"],remaining_attempts=remaining_attempts)
+
+            self.__print_end_game_message()
+            option = self.__get_user_end_game_option()
+
+            if self.__check_exit_game(option):
+                self.__print_goodbye_message()
+                self.__sock.close()
+                sys.exit(0)
+
+            self.__game_continued_action()
         else:
             self.__render_response(response_status, remaining_attempts=remaining_attempts)
 

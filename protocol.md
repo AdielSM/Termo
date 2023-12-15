@@ -86,7 +86,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
     "status_code": "203",
 
 
-    "feedback": [
+    "word_encoded": [
         {
             "index": 0,
             "modification": 2
@@ -108,6 +108,45 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 
     "remaining_attempts": quantidade de tentativas restantes
 
+}
+```
+
+207 <span style="color:lightblue"> (Fim de Jogo) </span>
+
+##### Código das cores:
+ - 0: cinza 
+ - 1: amarelo
+ - 2: verde
+
+```json
+{
+    "status_code": "207",
+
+
+    "word_encoded": [
+        {
+            "index": 0,
+            "modification": 2
+        },
+        {
+            "index": 1,
+            "modification": 1
+        },
+        {
+            "index": 2,
+            "modification": 1 
+        },
+        {
+            "index": 4,
+            "modification": 0
+        }
+    ],
+
+
+    "remaining_attempts": quantidade de tentativas restantes,
+    "secret_word": palavra secreta da vez,
+    "rounds_scores": pontuação em cada rodada do jogador atual,
+    "total_score": pontuacao total do jogador atual
 }
 ```
 

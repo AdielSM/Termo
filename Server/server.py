@@ -291,7 +291,7 @@ class Server:
                     current_player.add_score(current_player.game.remaining_attempts)
 
                     return {
-                        "status_code" : self.__protocol['PALAVRA_INCORRETA'],
+                        "status_code" : self.__protocol['FIM_DE_JOGO'],
                         "word_encoded" : feedback,
                         "remaining_attempts" : current_player.game.remaining_attempts,
                         "secret_word" : current_player.game.secret_word,
