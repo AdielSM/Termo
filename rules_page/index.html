@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
+
+        body{
+            background-image: url(./img/palavras-1200x565.png);;
+            margin: 0;
+            background-size: cover;
+        }
+
+        main{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card{
+            width: 800px;
+            height: 700px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px 10px rgba(207, 198, 16, 0.303);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card h1{
+            font-family: 'Cinzel', serif;
+            font-size: 50px;
+            color: #000;
+            margin-top: 50px;
+        }
+
+        .card p{
+            padding: 15px;
+            font-size: 20px;
+            color: #000;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+    </style>
+
+</head>
+<body>
+
+    <main>
+        <div class="card">
+            <h1>Regras</h1>
+            <p>A representação das letras pode ser verde, amarelo ou cinza. As letras verdes indicam que a letra está na palavra e na posição correta. As letras amarelas indicam que a letra está na palavra mas na posição errada. As letras cinzas indicam que a letra não está presente na palavra. Caso já haja a indicação de uma letra pela cor verde e em outra posição ela esteja amarela, isto não que dizer necessariamente que exista outra aparição da mesma letra na palavra.</p>
+            <p>A pontuação do jogo é calculada pela quantidade de tentativas restante ao acertar a palavra com um bônus que varia de acordo com o tempo decorrido entre a primeira tentativa até o acerto. Caso não haja mais tentativas, o jogador não ganha nenhuma pontuação.</p>
+            <p>Se o jogo for reiniciado pelo comando restart, o jogador perde a progressão atual, excluindo sua pontuação total e recomeçando a rodada caso o jogo esteja em andamento</p>
+        </div>
+    </main>
+</body>
+</html>
