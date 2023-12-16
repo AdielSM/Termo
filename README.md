@@ -17,7 +17,8 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 - [x] O jogo sorteia uma palavra aleatória de um arquivo e recebe palavras do usuário até que haja tentativas disponíveis.
 - [x] O jogo possui um sistema de pontuação que é calculado com base no número de tentativas restantes e no tempo gasto na rodada.
 - [x] O jogo possui um servidor que pode ser acessado por múltiplos clientes que estejam na mesma rede.
-- [x] O jogo possui um sistema de salas que permite que os jogadores criem party's para jogar com seus amigos.
+- [x] O jogo possui um sistema de ranking que é atualizado a cada partida.
+
   
 ## 💻 Instalação
 
@@ -100,7 +101,7 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 
 - [ ] Estabelecer um banco de dados para armazenar os dados dos jogadores para conseguir fazer um ranking com todos os participantes.
 
-- [ ] Implementar um sistema de chat para que os jogadores possam conversar entre si entre as rodadas de uma party.
+- [ ] Implementar um sistema de party para que os jogadores possam jogar em salas contra seus amigos.
 
 - [ ] Implementar um sistema de dicas que possa ser utilizado pelo jogador durante a partida.
 
