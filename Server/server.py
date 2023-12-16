@@ -61,12 +61,20 @@ class Server:
             self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 self.__sock.bind((self.__HOST, self.__PORT))
+            except OSError:
+                try:
+                    # Tenta conexão em porta dinâmica
+                    self.__sock.bind((self.__HOST, 0))
+                    self.__PORT = self.__sock.getsockname()[1]
+                    print(
+                        f"Não foi possível iniciar o servidor. Tentando conexão na porta {self.__PORT}")
+                except OSError:
+                    print('Não foi possível iniciar o servidor. Verifique sua conexão de rede e tente novamente')
+                    sys.exit(0)
+            finally:
                 thread_advertise = Thread(target=self.__advertise_service)
                 thread_advertise.start()
-            except OSError:
-                print(
-                    "Não foi possível iniciar o servidor. Verifique se a porta está disponível.")
-                sys.exit(1)
+                
             self.__sock.listen(10)
 
     @classmethod
@@ -92,7 +100,7 @@ class Server:
         words_to_choose = load_words()
         server_name = words_to_choose[randint(0, len(words_to_choose))]
 
-        info = ServiceInfo("Termo._server._tcp.local.",
+        info = ServiceInfo(f"Termo._{server_name}._server._tcp.local.",
                            "_server._tcp.local.", int(self.__PORT), addresses=[local_ip],
                            properties={"server_name": server_name})
         print(f"Anunciando o serviço a cada {time_interval_sec} segundo(s)")
