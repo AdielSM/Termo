@@ -254,45 +254,43 @@ class Server:
         if not current_player.round_start_time:
             current_player.turn_start()
 
+        if isinstance(feedback,int):
 
-            if isinstance(feedback,int):
-
-                if feedback == 202:
-                    current_player.add_score(current_player.game.remaining_attempts)
-
-                    return {
-                        "status_code" : self.__protocol['PALAVRA_CORRETA'],
-                        "remaining_attempts" : current_player.game.remaining_attempts,
-                        "rounds_scores" : current_player.rounds_scores,
-                        "total_score" : current_player.total_score
-                    }
-
-                return {
-                    "status_code" : feedback,
-                    "remaining_attempts" : current_player.game.remaining_attempts
-                }
-
-            else:
-
-                if current_player.game.remaining_attempts != 0:
-
-                    return {
-                        "status_code" : self.__protocol['PALAVRA_INCORRETA'],
-                        "word_encoded" : feedback,
-                        "remaining_attempts" : current_player.game.remaining_attempts
-                    }
-
-
+            if feedback == 202:
                 current_player.add_score(current_player.game.remaining_attempts)
 
                 return {
-                    "status_code" : self.__protocol['FIM_DE_JOGO'],
-                    "word_encoded" : feedback,
+                    "status_code" : self.__protocol['PALAVRA_CORRETA'],
                     "remaining_attempts" : current_player.game.remaining_attempts,
-                    "secret_word" : current_player.game.secret_word,
                     "rounds_scores" : current_player.rounds_scores,
                     "total_score" : current_player.total_score
                 }
+
+            return {
+                "status_code" : feedback,
+                "remaining_attempts" : current_player.game.remaining_attempts
+            }
+
+
+        if current_player.game.remaining_attempts != 0:
+
+            return {
+                "status_code" : self.__protocol['PALAVRA_INCORRETA'],
+                "word_encoded" : feedback,
+                "remaining_attempts" : current_player.game.remaining_attempts
+            }
+
+
+        current_player.add_score(current_player.game.remaining_attempts)
+
+        return {
+            "status_code" : self.__protocol['FIM_DE_JOGO'],
+            "word_encoded" : feedback,
+            "remaining_attempts" : current_player.game.remaining_attempts,
+            "secret_word" : current_player.game.secret_word,
+            "rounds_scores" : current_player.rounds_scores,
+            "total_score" : current_player.total_score
+        }
 
 
     def __list_words(self, current_player):
