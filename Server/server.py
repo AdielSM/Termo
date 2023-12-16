@@ -1,5 +1,6 @@
 # pylint: disable= E0611 C0103 W0718
 
+from random import randint
 from time import sleep
 import psutil
 import socket
@@ -10,8 +11,10 @@ from threading import Thread, Lock
 
 from Server import Player, Termo, PlayerNotFoundException, SingletonException
 
+from .words_loader import load_words
 from utils import summary_protocol, server_config
 import socket
+
 
 class PlayerFactory:
     """
@@ -51,7 +54,6 @@ class Server:
             self.__TAM_MSG, self.__PORT = server_config()
             self.__protocol = summary_protocol()
             self.__zeroconf = Zeroconf()
-            self.__service_info = None
             self.__active_players = []
             self.__active_players_lock = Lock()
             # self.__parties = []
@@ -59,9 +61,7 @@ class Server:
             self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 self.__sock.bind((self.__HOST, self.__PORT))
-                local_ip = self.__get_active_network_interface_ip()
-                thread_advertise = Thread(target=self.__advertise_service, args=(
-                    local_ip, self.__PORT))
+                thread_advertise = Thread(target=self.__advertise_service)
                 thread_advertise.start()
             except OSError:
                 print(
@@ -82,21 +82,25 @@ class Server:
             cls._instance = Server()
         return cls._instance
 
-    def __advertise_service(self, host, port):
+    def __advertise_service(self):
         # Configuração do serviço
-        local_ip = socket.inet_aton(host)
+        local_ip = self.__get_active_network_interface_ip()
+        local_ip = socket.inet_aton(local_ip)
         time_interval_sec = 3
+
+        # Escolhe um nome para o servidor
+        words_to_choose = load_words()
+        server_name = words_to_choose[randint(0, len(words_to_choose))]
+
         info = ServiceInfo("Termo._server._tcp.local.",
-                           "_server._tcp.local.", int(port), addresses=[local_ip])
+                           "_server._tcp.local.", int(self.__PORT), addresses=[local_ip],
+                           properties={"server_name": server_name})
         print(f"Anunciando o serviço a cada {time_interval_sec} segundo(s)")
 
         while True:
-            if self.__service_info:
-                # Se já houver um serviço registrado
-                self.__zeroconf.unregister_service(self.__service_info)
             self.__zeroconf.register_service(info)
-            self.__service_info = info
             sleep(time_interval_sec)
+            self.__zeroconf.unregister_service(info)
 
     def __get_active_network_interface_ip(self):
         try:
@@ -110,12 +114,10 @@ class Server:
                         if addr.family == socket.AF_INET:
                             return addr.address
 
-
         except Exception as e:
             print(f"Erro ao obter endereço IP: {e}")
 
         return self.__HOST
-
 
     def __make_player_active(self, client, con, user_name) -> Player:
         """

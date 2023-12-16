@@ -45,7 +45,7 @@ class Client:
 
         if services:
             print("Serviço encontrado:")
-            print(f"  Nome: {services.name}")
+            print(f"  Nome do Servidor: {services.properties.get(b'server_name').decode('utf-8')}")
             print(f"  Endereço IP: {socket.inet_ntoa(services.addresses[0])}")
             print(f"  Porta: {services.port}")
         else:
