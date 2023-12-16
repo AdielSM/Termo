@@ -422,6 +422,7 @@ class Client:
                 print("\033[90ma\033[0m - Letra não faz parte da palavra")
                 print("\033[93ma\033[0m - Letra faz parte da palavra, mas em outra posição")
                 print("\033[92ma\033[0m - Letra faz parte da palavra nessa posição")
+                print("\033[90mpara informações mais detalhadas, acesse: https://adielsm.github.io/Termo/\033[0m")
                 print("Bom jogo!\n")
 
             case 201:
