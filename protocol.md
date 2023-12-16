@@ -27,12 +27,28 @@ Solicita que o jogo atual seja reiniciado
     "status_code": "205"
 }
 ```
+
+401 <span style="color:lightblue"> (Jogo não iniciado) </span>
+
+```json
+{
+    "status_code": "401"
+}
+```
+
 # continue_game
 
 206 <span style="color:lightblue"> (Jogo Continuado) </span>
 ```json
 {
     "status_code": "206"
+}
+```
+
+401 <span style="color:lightblue"> (Jogo não iniciado) </span>
+```json
+{
+    "status_code": "401"
 }
 ```
 
@@ -201,6 +217,13 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
     "status_code": "204" 
 }
 
+```
+
+401  <span style="color:lightblue"> (Jogo não iniciado) </span>
+```json
+{
+    "status_code": 401 
+}
 ```
 
 # BAD REQUEST
