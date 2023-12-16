@@ -42,22 +42,21 @@ class Server:
         if Server._instance is not None:
             raise SingletonException("Esta classe é um Singleton!")
 
-        else:
-            Server._instance = self
-            self.__HOST = '0.0.0.0'
-            self.__TAM_MSG, self.__PORT = server_config()
-            self.__protocol = summary_protocol()
-            self.__active_players = []
-            self.__active_players_lock = Lock()
-            # self.__parties = []
-            # self.__parties_lock = Lock()
-            self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                self.__sock.bind((self.__HOST, self.__PORT))
-            except OSError:
-                print("Não foi possível iniciar o servidor. Verifique se a porta está disponível.")
-                sys.exit(1)
-            self.__sock.listen(10)
+        Server._instance = self
+        self.__HOST = '0.0.0.0'
+        self.__TAM_MSG, self.__PORT = server_config()
+        self.__protocol = summary_protocol()
+        self.__active_players = []
+        self.__active_players_lock = Lock()
+        # self.__parties = []
+        # self.__parties_lock = Lock()
+        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            self.__sock.bind((self.__HOST, self.__PORT))
+        except OSError:
+            print("Não foi possível iniciar o servidor. Verifique se a porta está disponível.")
+            sys.exit(1)
+        self.__sock.listen(10)
 
 
     @classmethod
@@ -144,11 +143,10 @@ class Server:
                 "status_code": self.__protocol['JOGO_JA_INICIADO']
             }
 
-        else:
-            current_player = self.__make_player_active(client, con, parameter)
-            return {
-                "status_code": self.__protocol['JOGO_INICIADO']
-            }
+        current_player = self.__make_player_active(client, con, parameter)
+        return {
+            "status_code": self.__protocol['JOGO_INICIADO']
+        }
 
 
     def __restart_game(self, current_player):
@@ -192,11 +190,11 @@ class Server:
             return {
                 "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
-        else:
-            current_player.game.start_game()
-            return {
-                "status_code" : self.__protocol['JOGO_CONTINUADO'],
-            }
+
+        current_player.game.start_game()
+        return {
+            "status_code" : self.__protocol['JOGO_CONTINUADO'],
+        }
 
 
     def __exit_game(self, client):
@@ -245,17 +243,16 @@ class Server:
                 "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
 
-        elif not parameter:
+        if not parameter:
             return {
                 "status_code" : self.__protocol['NECESSARIO_PARAMETRO'],
                 "remaining_attempts" : current_player.game.remaining_attempts
             }
 
-        else:
-            feedback = current_player.game.check_word(parameter)
+        feedback = current_player.game.check_word(parameter)
 
-            if not current_player.round_start_time:
-                current_player.turn_start()
+        if not current_player.round_start_time:
+            current_player.turn_start()
 
 
             if isinstance(feedback,int):
@@ -270,11 +267,10 @@ class Server:
                         "total_score" : current_player.total_score
                     }
 
-                else:
-                    return {
-                        "status_code" : feedback,
-                        "remaining_attempts" : current_player.game.remaining_attempts
-                    }
+                return {
+                    "status_code" : feedback,
+                    "remaining_attempts" : current_player.game.remaining_attempts
+                }
 
             else:
 
@@ -286,18 +282,17 @@ class Server:
                         "remaining_attempts" : current_player.game.remaining_attempts
                     }
 
-                else:
 
-                    current_player.add_score(current_player.game.remaining_attempts)
+                current_player.add_score(current_player.game.remaining_attempts)
 
-                    return {
-                        "status_code" : self.__protocol['FIM_DE_JOGO'],
-                        "word_encoded" : feedback,
-                        "remaining_attempts" : current_player.game.remaining_attempts,
-                        "secret_word" : current_player.game.secret_word,
-                        "rounds_scores" : current_player.rounds_scores,
-                        "total_score" : current_player.total_score
-                    }
+                return {
+                    "status_code" : self.__protocol['FIM_DE_JOGO'],
+                    "word_encoded" : feedback,
+                    "remaining_attempts" : current_player.game.remaining_attempts,
+                    "secret_word" : current_player.game.secret_word,
+                    "rounds_scores" : current_player.rounds_scores,
+                    "total_score" : current_player.total_score
+                }
 
 
     def __list_words(self, current_player):
@@ -316,11 +311,10 @@ class Server:
                 "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
             }
 
-        else:
-            return {
-                "status_code" : self.__protocol['LISTAR_PALAVRAS'],
-            }
-            
+
+        return {
+            "status_code" : self.__protocol['LISTAR_PALAVRAS'],
+        }
 
 
     def __invalid_command(self, current_player):
@@ -340,10 +334,10 @@ class Server:
                 "status_code" : self.__protocol['COMANDO_INVALIDO'],
                 "remaining_attempts" : current_player.game.remaining_attempts
             }
-        else:
-            return {
-                "status_code" : self.__protocol['COMANDO_INVALIDO'],
-            }
+
+        return {
+            "status_code" : self.__protocol['COMANDO_INVALIDO'],
+        }
 
 
     def __process_client_message(self, msg, con, client):
