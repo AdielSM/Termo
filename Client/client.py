@@ -9,7 +9,7 @@ import sys
 from prettytable import PrettyTable
 
 from utils import server_config, LinkedStack
-
+from zeroconf import Zeroconf
 
 class GameStatus(Enum):
     """
@@ -37,6 +37,20 @@ class Client:
         self.__scores_table = PrettyTable()
         self.__show_table = True
 
+    def __discover_services(self):
+        # Descobrir serviços
+        zeroconf = Zeroconf()
+        print("Procurando servidores nessa rede...")
+        services = zeroconf.get_service_info("Termo._server._tcp.local.", "_server._tcp.local.", timeout=70000)
+
+        if services:
+            print("Serviço encontrado:")
+            print(f"  Nome: {services.name}")
+            print(f"  Endereço IP: {socket.inet_ntoa(services.addresses[0])}")
+            print(f"  Porta: {services.port}")
+        else:
+            print("Nenhum serviço encontrado.")
+
     def __connect_to_server(self) -> socket.socket:
         """
         Estabelece uma conexão com o servidor.
@@ -54,6 +68,7 @@ class Client:
         for _ in range(5):
             try:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.__discover_services()
                 sock.connect((self.__HOST, self.__PORT))
                 return sock
             except socket.error:
