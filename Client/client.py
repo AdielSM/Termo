@@ -74,13 +74,22 @@ class Client:
         Args:
             self: A referência para a instância da classe.
 
+        Returns:
+            None: Não há retorno.
+            
+        Raises:
+            None: Não há exceções.
+        
         """
         self.__table.clear_rows()
         self.__table.field_names = ["Opção", "Descrição"]
         self.__table.add_row(["start", "Começar um jogo"])
-        self.__table.add_row(["stop", "Encerrar jogo atual"])
+        self.__table.add_row(["ctrl + c", "Encerrar o jogo"])
 
         if self.__game_status != GameStatus.NO_GAME:
+            self.__table.clear_rows()
+            self.__table.field_names = ["Opção", "Descrição"]
+            self.__table.add_row(["ctrl + c", "Encerrar o jogo"])
             self.__table.add_row(["try", "Tentar acertar a palavra secreta"])
             self.__table.add_row(["list", "Listar palavras digitadas nesta rodada"])
             self.__table.add_row(["reset", "Reiniciar o jogo atual"])
@@ -104,7 +113,7 @@ class Client:
         self.__scores_table.field_names = list(rounds_scores.keys())
         self.__scores_table.add_row(list(rounds_scores.values()))
         self.__scores_table.add_column("Pontuação Total", [total_score])
-    
+
         self.__scores_table.align["Rodada"] = "c"
         self.__scores_table.align["Pontuação Total"] = "c"
 
@@ -129,10 +138,6 @@ class Client:
         if user_command == "start":
             command = "start_game"
             parameter = self.__user_name
-
-        elif user_command == "stop":
-            command = "exit_game"
-            parameter = None
 
         elif user_command == "try" and self.__game_status == GameStatus.GAME_IN_PROGRESS:
             command = "check_word"
@@ -208,7 +213,6 @@ class Client:
         state_to_show = "ocultar" if self.__show_table else "exibir"
         print()
         print(f"\033[90mDigite {Client.SHOW_TABLE_INPUT} para {state_to_show} a tabela de menu\033[0m")
-        print("\033[90mPressione Ctrl + C para sair do jogo!\033[0m")
 
 
     def __print_end_game_message(self) -> None:
@@ -232,7 +236,7 @@ class Client:
         Fecha o socket e encerra o programa com uma mensagem.
 
         """
-        print(f"\nObrigado por jogar, {self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
+        print(f"\nObrigado por jogar, {self.__user_name}!\nFoi feito com ❤️  em 🐍\n")
         self.__sock.close()
         sys.exit(0)
 
@@ -280,12 +284,12 @@ class Client:
             str: A string contendo o número de tentativas restantes ou o número de tentativas até agora.
         """
         if remaining_attempts >= 0 and status_code == 202:
-            return f"Tentativas Restantes: {(remaining_attempts) - 1}"
+            return '\033[1m' + f'Tentativas Restantes: {remaining_attempts}' '\033[0m'
 
         elif remaining_attempts >= 0:
-            return f"Tentativas Restantes: {remaining_attempts}"
+            return '\033[1m' + f'Tentativas Restantes: {remaining_attempts}' '\033[0m'
 
-        return f"Número de tentativas até agora: {len(self.__words_stack)}"
+        return '\033[1m' + f'Tentativas Restantes: {remaining_attempts}' '\033[0m'
 
 
     def __check_exit_game(self, option) -> bool:
