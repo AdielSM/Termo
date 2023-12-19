@@ -109,10 +109,8 @@ class Client:
             else:
                 server_status = "🔴"
 
-            print(f"{server_status}  Nome do Servidor: {
-                server['server'].properties.get(b'server_name').decode('utf-8')}")
-            print(f"  Endereço IP: {socket.inet_ntoa(
-                server['server'].addresses[0])}")
+            print(f"{server_status}  Nome do Servidor: {server['server'].properties.get(b'server_name').decode('utf-8')}")
+            print(f"  Endereço IP: {socket.inet_ntoa(server['server'].addresses[0])}")
             print(f"  Porta: {server['server'].port}")
             print()
         self.__servers_Lock.release()
@@ -286,8 +284,7 @@ class Client:
         """
         state_to_show = "ocultar" if self.__show_table else "exibir"
         print()
-        print(f"\033[90mDigite {Client.SHOW_TABLE_INPUT} para {
-              state_to_show} a tabela de menu\033[0m")
+        print(f"\033[90mDigite {Client.SHOW_TABLE_INPUT} para {state_to_show} a tabela de menu\033[0m")
         print("\033[90mPressione Ctrl + C para sair do jogo!\033[0m")
 
     def __print_end_game_message(self) -> None:
@@ -300,8 +297,7 @@ class Client:
         """
         Exibe uma mensagem de despedida.
         """
-        print(f'\nAté a próxima, {
-              self.__user_name}! Obrigado por jogar o Termo!')
+        print(f'\nAté a próxima, {self.__user_name}! Obrigado por jogar o Termo!')
 
     def __handle_keyboard_interrupt(self) -> None:
         """
@@ -310,8 +306,7 @@ class Client:
         Fecha o socket e encerra o programa com uma mensagem.
 
         """
-        print(f"\nObrigado por jogar, {
-              self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
+        print(f"\nObrigado por jogar, {self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
         self.__sock.close()
         sys.exit(0)
 
@@ -502,16 +497,14 @@ class Client:
                 print("Jogo Finalizado com Sucesso")
 
             case 202:
-                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\
-                      n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts, response_status)}')
+                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts, response_status)}')
                 self.__render_score_table(extra_info.get(
                     "rounds_scores"), extra_info.get("total_score"))
                 self.__words_stack.clear()
 
             case 203:
                 self.__words_stack.stack_up(format_output)
-                print(f"\nPalavra Incorreta!\n{format_output}\n{
-                      self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
 
             case 204:
                 if self.__words_stack:
@@ -524,13 +517,11 @@ class Client:
                 self.__words_stack.clear()
 
             case 206:
-                print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {
-                      player_name}!")
+                print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!")
 
             case 207:
                 self.__words_stack.stack_up(format_output)
-                print(f"\nPalavra Incorreta!\n{format_output}\n{
-                      self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"\nPalavra Incorreta!\n{format_output}\n{elf.__return_attempts(remaining_attempts, response_status)}")
 
                 self.__words_stack.clear()
                 self.__secret_word_animation(secret_word)
@@ -556,27 +547,22 @@ class Client:
                 print("Jogo não iniciado")
 
             case 402:
-                print(f"É necessário digitar uma palavra\n{
-                      self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"É necessário digitar uma palavra\n{self.__return_attempts(remaining_attempts, response_status)}")
 
             case 403:
-                print(f"A palavra deve ter 5 letras\n{
-                      self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"A palavra deve ter 5 letras\n{self.__return_attempts(remaining_attempts, response_status)}")
 
             case 404:
-                print(f'A palavra não existe no dicionário\n{
-                      self.__return_attempts(remaining_attempts, response_status)}')
+                print(f'A palavra não existe no dicionário\n{self.__return_attempts(remaining_attempts, response_status)}')
 
             case 405:
-                print(f'Palavra já utilizada\n{self.__return_attempts(
-                    remaining_attempts, response_status)}')
+                print(f'Palavra já utilizada\n{self.__return_attempts(remaining_attempts, response_status)}')
 
             case 499:
                 print("\033[91m Comando inválido\033[0m")
 
                 if remaining_attempts:
-                    print(f'{self.__return_attempts(
-                        remaining_attempts, response_status)}')
+                    print(f'{self.__return_attempts(remaining_attempts, response_status)}')
 
     def __handle_response_status(self, response_status: int, response_data: Dict[str, Any], parameter: Any) -> None:
         """
@@ -598,8 +584,7 @@ class Client:
             self.__game_status = GameStatus.NO_GAME
 
         elif response_status == 202:
-            self.__render_response(response_status, remaining_attempts=remaining_attempts,
-                                   rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"])
+            self.__render_response(response_status, remaining_attempts=remaining_attempts, rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"])
 
             self.__print_end_game_message()
             option = self.__get_user_end_game_option()
@@ -625,8 +610,7 @@ class Client:
             color_str = self.__format_output(
                 parameter, response_data["word_encoded"])
 
-            self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"], rounds_scores=response_data[
-                                   "rounds_scores"], total_score=response_data["total_score"], remaining_attempts=remaining_attempts)
+            self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"], rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"], remaining_attempts=remaining_attempts)
 
             self.__print_end_game_message()
             option = self.__get_user_end_game_option()
@@ -728,6 +712,7 @@ class Client:
 
         except KeyboardInterrupt:
             print('\nPoxa, que pena que você não quis jogar :(')
+            sys.exit(0)
 
         except WindowsError:
             print("Ocorreu um erro ao conectar ao servidor. Provavelmente o servidor está offline. ")
