@@ -94,18 +94,23 @@ class Server:
         time_interval_sec = 3
 
         # Escolhe um nome para o servidor
-        words_to_choose = load_words()
-        server_name = words_to_choose[randint(0, len(words_to_choose))]
+        server_name = input("Escolha o nome para esse servidor ser encontrado> ")
 
-        info = ServiceInfo(f"Termo._{server_name}._server._tcp.local.",
-                           "_server._tcp.local.", int(self.__PORT), addresses=[local_ip],
-                           properties={"server_name": server_name})
-        print(f"Anunciando o serviço a cada {time_interval_sec} segundo(s)")
+        try:
+            info = ServiceInfo(f"Termo._{server_name}._server._tcp.local.",
+                            "_server._tcp.local.", int(self.__PORT), addresses=[local_ip],
+                            properties={"server_name": server_name})
+            print(f"Anunciando o serviço a cada {time_interval_sec} segundo(s)")
 
-        while True:
-            self.__zeroconf.register_service(info)
-            sleep(time_interval_sec)
-            self.__zeroconf.unregister_all_services()
+            while True:
+                self.__zeroconf.register_service(info)
+                sleep(time_interval_sec)
+                self.__zeroconf.unregister_all_services()
+        except KeyboardInterrupt:
+            exit(0)
+        except Zeroconf.NonUniqueNameException:
+            print("Nome de servidor já em uso. Tente novamente")
+            self.__advertise_service()
 
     def __get_active_network_interface_ip(self):
         try:
