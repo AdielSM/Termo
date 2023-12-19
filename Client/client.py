@@ -57,15 +57,6 @@ class Client:
                     self.__servers[server.properties.get(
                         b'server_name').decode('utf-8')] = {"server": server}
                 self.__servers_Lock.release()
-                # sleep(2)
-                # for server in self.__servers.items():
-                #     if server["ttl"] == 0:
-                #         name_server = self.__servers[server.properties.get(
-                #         b'server_name').decode('utf-8')]
-                #         del self.__servers[name_server]
-                #     else:
-                #         server["ttl"] -= 1
-                # self.__servers_Lock.release()
             except KeyboardInterrupt:
                 sys.exit(0)
             except Exception as e:
@@ -96,7 +87,7 @@ class Client:
             print(f"  Porta: {server['server'].port}")
         self.__servers_Lock.release()
 
-    def __connect_to_server(self) -> socket.socket:
+    def __connect_to_server(self, host, port) -> socket.socket:
         """
         Estabelece uma conexão com o servidor.
 
@@ -110,36 +101,14 @@ class Client:
             socket.error: Se não for possível estabelecer a conexão 
             com o servidor após 5 tentativas.
         """
-        name_server = ""
-        thread_discover_servers = Thread(target=self.__discover_servers)
-        thread_discover_servers.start()
-        sleep(3)
-        while not name_server:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                print(
-                    "\033[90mAperte ENTER para atualizar a lista de servidores\033[0m")
-                self.__show_servers()
-                name_server = input("Digite o nome do servidor: ")
-
-                if not name_server:
-                    continue
-
-                server = self.__servers.get(name_server)
-                if server:
-                    host, port = socket.inet_ntoa(server["server"].addresses[0]), server["server"].port
-                    sock.connect((host, port))
-                    self.__game_status = GameStatus.NO_GAME
-                    return sock
-                else:
-                    raise socket.error(
-                        "Servidor não encontrado. Verifique se o servidor está ativo e tente novamente.")
-            except socket.error as err:
-                print(str(err))
-                continue
-            except KeyboardInterrupt:
-                print("Encerrando o Termo!")
-                exit(0)
+        
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.connect((host, port))
+            self.__game_status = GameStatus.NO_GAME
+            return sock
+        except socket.error as err:
+            print(str(err))
 
         raise socket.error(
             "Não foi possível conectar ao servidor. Tente reiniciar o cliente.")
@@ -647,7 +616,27 @@ class Client:
             Exception: Se ocorrer qualquer outra exceção.
         """
         try:
-            self.__sock = self.__connect_to_server()
+            name_server = ""
+            thread_discover_servers = Thread(target=self.__discover_servers)
+            thread_discover_servers.start()
+            sleep(3)
+            while not name_server:
+                print(
+                    "\033[90mAperte ENTER para atualizar a lista de servidores\033[0m")
+                self.__show_servers()
+                name_server = input("Digite o nome do servidor: ")
+
+                if not name_server:
+                    continue
+
+                server = self.__servers.get(name_server)
+                if server:
+                    host, port = socket.inet_ntoa(server["server"].addresses[0]), server["server"].port
+                    self.__sock = self.__connect_to_server(host, port)
+                else:
+                    print(
+                        "Servidor não encontrado. Verifique se o servidor está ativo e tente novamente.")
+                    name_server = ""
             self.__print_welcome_message()
             self.__user_name = self.__get_username()
 
