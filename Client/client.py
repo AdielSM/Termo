@@ -1,5 +1,7 @@
-#pylint: disable= W0238 C0103 C0301
+# pylint: disable= W0238 C0103 C0301
 
+from zeroconf import Zeroconf
+from threading import Lock, Thread
 from time import sleep
 from enum import Enum
 from typing import Any, Dict, Tuple
@@ -15,6 +17,7 @@ class GameStatus(Enum):
     """
     Classe Enum que representa o status de um jogo.
     """
+    NO_CONNECTION = 0
     NO_GAME = 1
     GAME_IN_PROGRESS = 2
     GAME_FINISHED = 3
@@ -26,18 +29,95 @@ class Client:
     """
 
     SHOW_TABLE_INPUT = "TABELA"
+
     def __init__(self) -> None:
         self.__HOST: str = '127.0.0.1'
         self.__MSG_SIZE, self.__PORT = server_config()
         self.__sock: socket.socket = None
-        self.__game_status: GameStatus = GameStatus.NO_GAME
+        self.__zeroconf = Zeroconf()
+        self.__servers = {}
+        self.__servers_Lock = Lock()
+        self.__game_status: GameStatus = GameStatus.NO_CONNECTION
         self.__user_name: str = None
         self.__words_stack = LinkedStack()
         self.__table = PrettyTable()
         self.__scores_table = PrettyTable()
         self.__show_table = True
 
-    def __connect_to_server(self) -> socket.socket:
+    def manage_servers_ttl(self):
+        """
+        Gerencia o tempo de vida dos servidores.
+
+        """
+        while self.__game_status == GameStatus.NO_CONNECTION:
+            self.__servers_Lock.acquire()    
+            if self.__servers == {}:
+                self.__servers_Lock.release()
+                sleep(3)
+                continue
+            
+            servers_to_remove = []
+            for server in self.__servers.values():
+                if server["ttl"] == 0:
+                    name_server = server['server'].properties.get(b'server_name').decode('utf-8')
+                    servers_to_remove.append(name_server)
+                else:
+                    server["ttl"] -= 1
+
+            # Remove todos os servidores inativos
+            for name_server in servers_to_remove:
+                    del self.__servers[name_server]
+
+            self.__servers_Lock.release()
+            sleep(1)
+        
+
+    def __discover_servers(self):
+        # Descobrir serviços
+        while self.__game_status == GameStatus.NO_CONNECTION:
+            try:
+                with self.__servers_Lock:
+                    server = self.__zeroconf.get_service_info("Termo._server._tcp.local.", "_server._tcp.local.",
+                                                          timeout=5000)
+
+                if server:
+                    self.__servers_Lock.acquire()
+                    self.__servers[server.properties.get(
+                        b'server_name').decode('utf-8')] = {"server": server, "ttl": 5}
+                    self.__servers_Lock.release()
+            except KeyboardInterrupt:
+                sys.exit(0)
+            except Exception as e:
+                print(e)
+                print(
+                    "Erro ao procurar servidores disponíveis, tente novamente mais tarde.")
+
+    def __show_servers(self):
+        self.__servers_Lock.acquire()
+        print("\n"*3)
+        if self.__servers == {}:
+            print("Nenhum servidor encontrado.")
+            return
+
+        print("\033[1mServidores disponíveis:\033[0m")
+        for server in self.__servers.values():
+            server_status = ""
+            if server["ttl"] > 3:
+                server_status = "🟢"
+            elif server["ttl"] > 1:
+                server_status = "🟡"
+            else:
+                server_status = "🔴"
+
+            print(f"{server_status}  Nome do Servidor: {
+                server['server'].properties.get(b'server_name').decode('utf-8')}")
+            print(f"  Endereço IP: {socket.inet_ntoa(
+                server['server'].addresses[0])}")
+            print(f"  Porta: {server['server'].port}")
+            print()
+        self.__servers_Lock.release()
+
+    def __connect_to_server(self, host, port) -> socket.socket:
         """
         Estabelece uma conexão com o servidor.
 
@@ -51,21 +131,17 @@ class Client:
             socket.error: Se não for possível estabelecer a conexão 
             com o servidor após 5 tentativas.
         """
-        for _ in range(5):
-            try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.connect((self.__HOST, self.__PORT))
-                return sock
-            except socket.error:
-                try:
-                    print("Erro ao conectar ao servidor. Tentando novamente em 5 segundos.")
-                    sleep(5)
-                except KeyboardInterrupt:
-                    print("Encerrando o Termo!")
-                    exit(0)
+        
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.connect((host, port))
+            self.__game_status = GameStatus.NO_GAME
+            return sock
+        except socket.error as err:
+            print(str(err))
 
-        raise socket.error("Não foi possível conectar ao servidor. Tente reiniciar o cliente.")
-
+        raise socket.error(
+            "Não foi possível conectar ao servidor. Tente reiniciar o cliente.")
 
     def __render_menu_table(self) -> None:
         """
@@ -91,7 +167,8 @@ class Client:
             self.__table.field_names = ["Opção", "Descrição"]
             self.__table.add_row(["ctrl + c", "Encerrar o jogo"])
             self.__table.add_row(["try", "Tentar acertar a palavra secreta"])
-            self.__table.add_row(["list", "Listar palavras digitadas nesta rodada"])
+            self.__table.add_row(
+                ["list", "Listar palavras digitadas nesta rodada"])
             self.__table.add_row(["reset", "Reiniciar o jogo atual"])
 
         self.__table.align["Opção"] = "l"
@@ -99,8 +176,7 @@ class Client:
 
         print(self.__table)
 
-
-    def __render_score_table(self, rounds_scores:dict, total_score:float) -> str:
+    def __render_score_table(self, rounds_scores: dict, total_score: float) -> str:
         """
         Renderiza uma tabela com os scores das rodadas.
 
@@ -119,7 +195,6 @@ class Client:
 
         print("")
         print(self.__scores_table)
-
 
     def __process_user_command(self, user_command: str) -> Tuple[str, Any]:
         """
@@ -157,7 +232,6 @@ class Client:
 
         return (command, parameter)
 
-
     def __send_requisition(self, req_body: Dict[str, Any]) -> Dict[str, Any]:
         """
         Envia uma requisição para o servidor.
@@ -179,25 +253,26 @@ class Client:
         response_data = json.loads(response)
         return response_data
 
-
     def __print_welcome_message(self) -> None:
         """
         Exibe uma mensagem de boas-vindas.
         """
-        print(f"\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}\n")
-
+        print(f"\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}")
 
     def __get_username(self) -> str:
         """
         Solicita ao usuário um nickname.
         """
-        user_name = input("Digite seu nome de usuário: ")
+        try:
+            user_name = input("Digite seu nome de usuário: ")
 
-        if user_name.strip() == "":
-            return "Anônimo"
+            if user_name.strip() == "":
+                return "Anônimo"
 
-        return user_name
-
+            return user_name
+        except KeyboardInterrupt:
+            print('\nPoxa, que pena que você não quis jogar :(')
+            sys.exit(0)
 
     def __get_user_command(self) -> str:
         """
@@ -205,15 +280,15 @@ class Client:
         """
         return input('\nTermo> ')
 
-
     def __print_exit_message(self) -> None:
         """
         Exibe a mensagem de instrução para caso o jogador deseje encerrar o jogo.
         """
         state_to_show = "ocultar" if self.__show_table else "exibir"
         print()
-        print(f"\033[90mDigite {Client.SHOW_TABLE_INPUT} para {state_to_show} a tabela de menu\033[0m")
-
+        print(f"\033[90mDigite {Client.SHOW_TABLE_INPUT} para {
+              state_to_show} a tabela de menu\033[0m")
+        print("\033[90mPressione Ctrl + C para sair do jogo!\033[0m")
 
     def __print_end_game_message(self) -> None:
         """
@@ -221,13 +296,12 @@ class Client:
         """
         print("\nA rodada acabou! Deseja continuar jogando?")
 
-
     def __print_goodbye_message(self) -> None:
         """
         Exibe uma mensagem de despedida.
         """
-        print(f'\nAté a próxima, {self.__user_name}! Obrigado por jogar o Termo!')
-
+        print(f'\nAté a próxima, {
+              self.__user_name}! Obrigado por jogar o Termo!')
 
     def __handle_keyboard_interrupt(self) -> None:
         """
@@ -236,10 +310,10 @@ class Client:
         Fecha o socket e encerra o programa com uma mensagem.
 
         """
-        print(f"\nObrigado por jogar, {self.__user_name}!\nFoi feito com ❤️  em 🐍\n")
+        print(f"\nObrigado por jogar, {
+              self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
         self.__sock.close()
         sys.exit(0)
-
 
     def __create_request_body(self, command: str, parameter: Any) -> Dict[str, Any]:
         """
@@ -257,7 +331,6 @@ class Client:
             "parameter": parameter
         }
 
-
     def __get_user_end_game_option(self) -> str:
         """
         Solicita ao usuário a opção de continuar ou sair do jogo.
@@ -265,13 +338,12 @@ class Client:
         Returns:
             str: A opção escolhida pelo usuário ('1' para continuar ou '2' para sair).
         """
-        usr_input =  input('Digite 1 para continuar ou 2 para sair: ')
+        usr_input = input('Digite 1 para continuar ou 2 para sair: ')
 
         while usr_input not in ['1', '2']:
             usr_input = input('Digite uma opção válida (1/2): ')
 
         return usr_input
-
 
     def __return_attempts(self, remaining_attempts, status_code) -> str:
         """
@@ -289,8 +361,7 @@ class Client:
         elif remaining_attempts >= 0:
             return '\033[1m' + f'Tentativas Restantes: {remaining_attempts}' '\033[0m'
 
-        return '\033[1m' + f'Tentativas Restantes: {remaining_attempts}' '\033[0m'
-
+        return f"Número de tentativas até agora: {len(self.__words_stack)}"
 
     def __check_exit_game(self, option) -> bool:
         """
@@ -301,7 +372,7 @@ class Client:
 
         Returns:
             bool: True se o jogo deve ser encerrado, False caso contrário.
-        
+
         """
         if option == '1':
             self.__game_status = GameStatus.GAME_IN_PROGRESS
@@ -309,7 +380,6 @@ class Client:
 
         self.__game_status = GameStatus.GAME_FINISHED
         return True
-
 
     def __game_continued_action(self) -> None:
         """
@@ -333,7 +403,8 @@ class Client:
                 response_data = self.__send_requisition(req_body)
                 response_status = response_data["status_code"]
 
-                self.__render_response(response_status, player_name=self.__user_name)
+                self.__render_response(
+                    response_status, player_name=self.__user_name)
                 return
 
             except OSError:
@@ -343,7 +414,6 @@ class Client:
                 print("Ocorreu um erro ao decodificar a resposta do servidor.")
 
         print("Ocorreu um erro ao continuar o jogo. Por favor, considere reiniciar")
-
 
     def __format_output(self, word, format_instructions) -> str:
         """
@@ -387,7 +457,6 @@ class Client:
             print(''.join(transformed_word))
             sleep(1)
 
-
     def __render_response(self, response_status: int, **extra_info):
         """
         Renderiza a resposta com base no status recebido.
@@ -403,7 +472,6 @@ class Client:
 
         elif 400 <= response_status < 500:
             self.__handle_error_cases(response_status, **extra_info)
-
 
     def __handle_successful_cases(self, response_status, **extra_info):
         """
@@ -424,22 +492,26 @@ class Client:
                 print("Jogo Iniciado com Sucesso")
                 print("\n\033[1mTutorial básico:\033[0m")
                 print("\033[90ma\033[0m - Letra não faz parte da palavra")
-                print("\033[93ma\033[0m - Letra faz parte da palavra, mas em outra posição")
-                print("\033[92ma\033[0m - Letra faz parte da palavra nessa posição")
-                print("\033[90mpara informações mais detalhadas, acesse: https://adielsm.github.io/Termo/\033[0m")
+                print(
+                    "\033[93ma\033[0m - Letra faz parte da palavra, mas em outra posição")
+                print(
+                    "\033[92ma\033[0m - Letra faz parte da palavra nessa posição")
                 print("Bom jogo!\n")
 
             case 201:
                 print("Jogo Finalizado com Sucesso")
 
             case 202:
-                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts, response_status)}')
-                self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
+                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\
+                      n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts, response_status)}')
+                self.__render_score_table(extra_info.get(
+                    "rounds_scores"), extra_info.get("total_score"))
                 self.__words_stack.clear()
 
             case 203:
                 self.__words_stack.stack_up(format_output)
-                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"\nPalavra Incorreta!\n{format_output}\n{
+                      self.__return_attempts(remaining_attempts, response_status)}")
 
             case 204:
                 if self.__words_stack:
@@ -452,16 +524,18 @@ class Client:
                 self.__words_stack.clear()
 
             case 206:
-                print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!")
+                print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {
+                      player_name}!")
 
             case 207:
                 self.__words_stack.stack_up(format_output)
-                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"\nPalavra Incorreta!\n{format_output}\n{
+                      self.__return_attempts(remaining_attempts, response_status)}")
 
                 self.__words_stack.clear()
                 self.__secret_word_animation(secret_word)
-                self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
-
+                self.__render_score_table(extra_info.get(
+                    "rounds_scores"), extra_info.get("total_score"))
 
     def __handle_error_cases(self, response_status, **remaining_attempts):
         """
@@ -482,24 +556,27 @@ class Client:
                 print("Jogo não iniciado")
 
             case 402:
-                print(f"É necessário digitar uma palavra\n{self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"É necessário digitar uma palavra\n{
+                      self.__return_attempts(remaining_attempts, response_status)}")
 
             case 403:
-                print(f"A palavra deve ter 5 letras\n{self.__return_attempts(remaining_attempts, response_status)}")
+                print(f"A palavra deve ter 5 letras\n{
+                      self.__return_attempts(remaining_attempts, response_status)}")
 
             case 404:
-                print(f'A palavra não existe no dicionário\n{self.__return_attempts(remaining_attempts, response_status)}')
+                print(f'A palavra não existe no dicionário\n{
+                      self.__return_attempts(remaining_attempts, response_status)}')
 
             case 405:
-                print(f'Palavra já utilizada\n{self.__return_attempts(remaining_attempts, response_status)}')
+                print(f'Palavra já utilizada\n{self.__return_attempts(
+                    remaining_attempts, response_status)}')
 
             case 499:
                 print("\033[91m Comando inválido\033[0m")
 
                 if remaining_attempts:
-                    print(f'{self.__return_attempts(remaining_attempts, response_status)}')
-
-
+                    print(f'{self.__return_attempts(
+                        remaining_attempts, response_status)}')
 
     def __handle_response_status(self, response_status: int, response_data: Dict[str, Any], parameter: Any) -> None:
         """
@@ -521,7 +598,8 @@ class Client:
             self.__game_status = GameStatus.NO_GAME
 
         elif response_status == 202:
-            self.__render_response(response_status, remaining_attempts=remaining_attempts, rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"])
+            self.__render_response(response_status, remaining_attempts=remaining_attempts,
+                                   rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"])
 
             self.__print_end_game_message()
             option = self.__get_user_end_game_option()
@@ -531,19 +609,24 @@ class Client:
                 self.__sock.close()
                 sys.exit(0)
 
-            self.__game_continued_action()  
+            self.__game_continued_action()
 
         elif response_status == 203:
-            color_str = self.__format_output(parameter, response_data["word_encoded"])
-            self.__render_response(response_status, format_output=color_str, remaining_attempts=remaining_attempts)
-                
+            color_str = self.__format_output(
+                parameter, response_data["word_encoded"])
+            self.__render_response(
+                response_status, format_output=color_str, remaining_attempts=remaining_attempts)
+
         elif response_status == 206:
-            self.__render_response(response_status, player_name=self.__user_name)
+            self.__render_response(
+                response_status, player_name=self.__user_name)
 
         elif response_status == 207:
-            color_str = self.__format_output(parameter, response_data["word_encoded"])
+            color_str = self.__format_output(
+                parameter, response_data["word_encoded"])
 
-            self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"], rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"],remaining_attempts=remaining_attempts)
+            self.__render_response(response_status, format_output=color_str, secret_word=response_data["secret_word"], rounds_scores=response_data[
+                                   "rounds_scores"], total_score=response_data["total_score"], remaining_attempts=remaining_attempts)
 
             self.__print_end_game_message()
             option = self.__get_user_end_game_option()
@@ -555,8 +638,8 @@ class Client:
 
             self.__game_continued_action()
         else:
-            self.__render_response(response_status, remaining_attempts=remaining_attempts)
-
+            self.__render_response(
+                response_status, remaining_attempts=remaining_attempts)
 
     def run(self) -> None:
         """
@@ -571,8 +654,38 @@ class Client:
             ValueError: Se um valor inválido for inserido pelo usuário.
             Exception: Se ocorrer qualquer outra exceção.
         """
-        try:   
-            self.__sock = self.__connect_to_server() 
+        try:
+            # Inicializa a thread de monitoramento de servidores ativos
+            thread_discover_servers = Thread(target=self.__discover_servers)
+            thread_discover_servers.start()
+
+            # Inicializa a thread de gerenciamento de tempo de vida dos servidores, que roda a cada 1s
+            thread_manage_servers_ttl = Thread(target=self.manage_servers_ttl)
+            thread_manage_servers_ttl.start()
+            
+            sleep(3)
+            name_server = ""
+            while not name_server:
+                try:
+                    self.__show_servers()
+                    print(
+                        "\033[90mAperte ENTER para atualizar a lista de servidores\033[0m")
+                    name_server = input("\nDigite o nome do servidor> ")
+
+                    if not name_server:
+                        continue
+
+                    server = self.__servers.get(name_server)
+                    if server:
+                        host, port = socket.inet_ntoa(server["server"].addresses[0]), server["server"].port
+                        self.__sock = self.__connect_to_server(host, port)
+                    else:
+                        print(
+                            "Servidor não encontrado. Verifique se o servidor está ativo e tente novamente.")
+                        name_server = ""
+                except KeyboardInterrupt:
+                    print('\nPoxa, que pena que você não quis jogar :(')
+                    sys.exit(0)
             self.__print_welcome_message()
             self.__user_name = self.__get_username()
 
@@ -594,8 +707,8 @@ class Client:
                     response_data = self.__send_requisition(req_body)
                     response_status = response_data["status_code"]
 
-                    self.__handle_response_status(response_status, response_data, parameter)
-
+                    self.__handle_response_status(
+                        response_status, response_data, parameter)
 
                 except KeyboardInterrupt:
                     self.__handle_keyboard_interrupt()
@@ -606,11 +719,11 @@ class Client:
                     sys.exit(0)
 
                 except ValueError as e:
-                    print(str(e)) 
+                    print(str(e))  
                     continue
 
                 except Exception as e:
-                    print(str(e))  
+                    print(str(e))
                     continue
 
         except KeyboardInterrupt:
@@ -622,4 +735,5 @@ class Client:
             sys.exit(0)
 
         except Exception as e:
-            print(str(e))  
+            print(str(e))
+        return

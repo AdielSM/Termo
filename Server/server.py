@@ -1,13 +1,19 @@
-#pylint: disable= E0611 C0103 W0718
+# pylint: disable= E0611 C0103 W0718
 
+from random import randint
+from time import sleep
+import psutil
 import socket
 import json
 import sys
+from zeroconf import ServiceInfo, Zeroconf
 from threading import Thread, Lock
 
 from Server import Player, Termo, PlayerNotFoundException, SingletonException
 
+from .words_loader import load_words
 from utils import summary_protocol, server_config
+import socket
 
 
 class PlayerFactory:
@@ -64,22 +70,31 @@ class Server:
         if Server._instance is not None:
             raise SingletonException("Esta classe é um Singleton!")
 
-        Server._instance = self
-        self.__HOST = '0.0.0.0'
-        self.__TAM_MSG, self.__PORT = server_config()
-        self.__protocol = summary_protocol()
-        self.__active_players = []
-        self.__active_players_lock = Lock()
-        # self.__parties = []
-        # self.__parties_lock = Lock()
-        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            self.__sock.bind((self.__HOST, self.__PORT))
-        except OSError:
-            print("Não foi possível iniciar o servidor. Verifique se a porta está disponível.")
-            sys.exit(1)
-        self.__sock.listen(10)
+        else:
+            Server._instance = self
+            self.__HOST = '0.0.0.0'
+            self.__TAM_MSG, self.__PORT = server_config()
+            self.__protocol = summary_protocol()
+            self.__zeroconf = Zeroconf()
+            self.__active_players = []
+            self.__active_players_lock = Lock()
+            # self.__parties = []
+            # self.__parties_lock = Lock()
+            self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                self.__sock.bind((self.__HOST, self.__PORT))
+            except OSError:
+                try:
+                    # Tenta conexão em porta dinâmica
+                    self.__sock.bind((self.__HOST, 0))
+                    self.__PORT = self.__sock.getsockname()[1]
+                    print(
+                        f"Não foi possível iniciar o servidor. Tentando conexão na porta {self.__PORT}")
+                except OSError:
+                    print('Não foi possível iniciar o servidor. Verifique sua conexão de rede e tente novamente')
+                    sys.exit(0)
 
+            self.__sock.listen(10)
 
     @classmethod
     def get_instance(cls) -> 'Server':
@@ -91,11 +106,59 @@ class Server:
         
         Returns:
             Server: A instância única da classe.
-            
+
         """
         if cls._instance is None:
             cls._instance = Server()
         return cls._instance
+
+    def __advertise_service(self):
+        # Configuração do serviço
+        local_ip = self.__get_active_network_interface_ip()
+        print(f"Endereço IP local: {local_ip}")
+        print(f"Porta: {self.__PORT}")
+
+        local_ip = socket.inet_aton(local_ip)
+        time_interval_sec = 3
+
+        # Escolhe um nome para o servidor
+        server_name = input("\nEscolha o nome para esse servidor ser encontrado> ")
+
+        try:
+            info = ServiceInfo(f"Termo._{server_name}._server._tcp.local.",
+                            "_server._tcp.local.", int(self.__PORT), addresses=[local_ip],
+                            properties={"server_name": server_name})
+            print(f"Anunciando o serviço a cada {time_interval_sec} segundo(s)")
+
+            while True:
+                self.__zeroconf.register_service(info)
+                sleep(time_interval_sec)
+                self.__zeroconf.unregister_all_services()
+        except KeyboardInterrupt:
+            exit(0)
+        except:
+            print("Erro ao anunciar o servidor, nome pode já estar em uso. Tente novamente")
+            self.__advertise_service()
+
+    def __get_active_network_interface_ip(self):
+        try:
+            # Obtém todas as interfaces de rede
+            interfaces = psutil.net_if_addrs()
+
+            # Procura por uma interface ativa que não seja 'lo' (loopback)
+            for interface, addrs in interfaces.items():
+                if interface != 'lo':
+                    for addr in addrs:
+                        if addr.family == socket.AF_INET:
+                        # Verifica se o endereço IP está no intervalo 192.168.0.0/16 ou 10.0.0.0/8, fazendo parte de uma rede local
+                            ip_parts = addr.address.split('.')
+                            if ip_parts[0] == '10' or (ip_parts[0] == '192' and ip_parts[1] == '168'):
+                                return addr.address
+
+        except Exception as e:
+            print(f"Erro ao obter endereço IP: {e}")
+
+        return self.__HOST
 
     def __make_player_active(self, client, con, user_name) -> Player:
         """
@@ -133,8 +196,8 @@ class Server:
                     self.__active_players.remove(player)
                 return
 
-        raise PlayerNotFoundException('Player não encontrado na lista de players ativos.')
-
+        raise PlayerNotFoundException(
+            'Player não encontrado na lista de players ativos.')
 
     def __get_current_player(self, client):
         """
@@ -174,7 +237,6 @@ class Server:
             "status_code": self.__protocol['JOGO_INICIADO']
         }
 
-
     def __restart_game(self, current_player):
         """
         Reinicia o jogo para o cliente especificado.
@@ -193,14 +255,13 @@ class Server:
             current_player.restart()
 
             return {
-                "status_code" : self.__protocol['JOGO_REINICIADO'],
+                "status_code": self.__protocol['JOGO_REINICIADO'],
             }
 
         except AttributeError:
             return {
-                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code": self.__protocol['JOGO_NAO_INICIADO'],
             }
-
 
     def __continue_game(self, current_player):
         """
@@ -214,14 +275,13 @@ class Server:
         """
         if not current_player:
             return {
-                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code": self.__protocol['JOGO_NAO_INICIADO'],
             }
 
         current_player.game.start_game()
         return {
             "status_code" : self.__protocol['JOGO_CONTINUADO'],
         }
-
 
     def __exit_game(self, client):
         """
@@ -241,18 +301,17 @@ class Server:
         try:
             self.__remove_player_active(client)
             return {
-                "status_code" : self.__protocol['JOGO_ENCERRADO'],
+                "status_code": self.__protocol['JOGO_ENCERRADO'],
             }
         except PlayerNotFoundException:
             return {
-                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code": self.__protocol['JOGO_NAO_INICIADO'],
             }
-
 
     def __check_word(self, current_player, parameter):
         """
         Verifica se a palavra fornecida pelo player está correta ou incorreta.
-        
+
         Args:
             current_player: O player atual.
             parameter: A palavra fornecida pelo player.
@@ -264,13 +323,13 @@ class Server:
 
         if not current_player:
             return {
-                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code": self.__protocol['JOGO_NAO_INICIADO'],
             }
 
         if not parameter:
             return {
-                "status_code" : self.__protocol['NECESSARIO_PARAMETRO'],
-                "remaining_attempts" : current_player.game.remaining_attempts
+                "status_code": self.__protocol['NECESSARIO_PARAMETRO'],
+                "remaining_attempts": current_player.game.remaining_attempts
             }
 
         feedback = current_player.game.check_word(parameter)
@@ -316,7 +375,6 @@ class Server:
             "total_score" : current_player.total_score
         }
 
-
     def __list_words(self, current_player):
         """
         Retorna um dicionário contendo o código de status para listar as palavras.
@@ -330,7 +388,7 @@ class Server:
 
         if not current_player:
             return {
-                "status_code" : self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code": self.__protocol['JOGO_NAO_INICIADO'],
             }
 
 
@@ -351,14 +409,13 @@ class Server:
         """
         if current_player:
             return {
-                "status_code" : self.__protocol['COMANDO_INVALIDO'],
-                "remaining_attempts" : current_player.game.remaining_attempts
+                "status_code": self.__protocol['COMANDO_INVALIDO'],
+                "remaining_attempts": current_player.game.remaining_attempts
             }
 
         return {
             "status_code" : self.__protocol['COMANDO_INVALIDO'],
         }
-
 
     def __process_client_message(self, msg, con, client):
         """
@@ -386,7 +443,8 @@ class Server:
 
             match command:
                 case "start_game":
-                    data = self.__start_game(current_player, client, con, parameter)
+                    data = self.__start_game(
+                        current_player, client, con, parameter)
 
                 case "restart_game":
                     data = self.__restart_game(current_player)
@@ -438,7 +496,6 @@ class Server:
                 break
         con.close()
 
-
     def run(self):
         """
         Inicia a execução do servidor, aguardando a conexão de clientes e tratando cada cliente 
@@ -454,6 +511,10 @@ class Server:
             Exception: Caso ocorra algum erro ao lidar com o cliente.
 
         """
+
+        # Inicia anúncio do servidor na rede
+        thread_advertise = Thread(target=self.__advertise_service)
+        thread_advertise.start()
         while True:
             try:
                 con, cliente = self.__sock.accept()
@@ -466,5 +527,3 @@ class Server:
                 
             except Exception as e:
                 print(f"Erro ao lidar com o cliente: {e}")
-                
-                
