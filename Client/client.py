@@ -44,6 +44,34 @@ class Client:
         self.__scores_table = PrettyTable()
         self.__show_table = True
 
+    def manage_servers_ttl(self):
+        """
+        Gerencia o tempo de vida dos servidores.
+
+        """
+        while self.__game_status == GameStatus.NO_CONNECTION:
+            self.__servers_Lock.acquire()    
+            if self.__servers == {}:
+                self.__servers_Lock.release()
+                sleep(3)
+                continue
+            
+            servers_to_remove = []
+            for server in self.__servers.values():
+                if server["ttl"] == 0:
+                    name_server = server['server'].properties.get(b'server_name').decode('utf-8')
+                    servers_to_remove.append(name_server)
+                else:
+                    server["ttl"] -= 1
+
+            # Remove todos os servidores inativos
+            for name_server in servers_to_remove:
+                    del self.__servers[name_server]
+
+            self.__servers_Lock.release()
+            sleep(1)
+        
+
     def __discover_servers(self):
         # Descobrir serviços
         while self.__game_status == GameStatus.NO_CONNECTION:
@@ -52,11 +80,11 @@ class Client:
                     server = self.__zeroconf.get_service_info("Termo._server._tcp.local.", "_server._tcp.local.",
                                                           timeout=5000)
 
-                self.__servers_Lock.acquire()
                 if server:
+                    self.__servers_Lock.acquire()
                     self.__servers[server.properties.get(
-                        b'server_name').decode('utf-8')] = {"server": server}
-                self.__servers_Lock.release()
+                        b'server_name').decode('utf-8')] = {"server": server, "ttl": 5}
+                    self.__servers_Lock.release()
             except KeyboardInterrupt:
                 sys.exit(0)
             except Exception as e:
@@ -66,25 +94,27 @@ class Client:
 
     def __show_servers(self):
         self.__servers_Lock.acquire()
+        print("\n"*3)
         if self.__servers == {}:
             print("Nenhum servidor encontrado.")
             return
 
-        print("Servidores disponíveis:")
+        print("\033[1mServidores disponíveis:\033[0m")
         for server in self.__servers.values():
-            # server_status = ""
-            # if server["ttl"] > 3:
-            #     server_status = "🟢"
-            # elif server["ttl"] >= 1:
-            #     server_status = "🟡"
-            # elif server["ttl"] == 0:
-            #     server_status = "🔴"
+            server_status = ""
+            if server["ttl"] > 3:
+                server_status = "🟢"
+            elif server["ttl"] > 1:
+                server_status = "🟡"
+            else:
+                server_status = "🔴"
 
-            print(f"  Nome do Servidor: {
+            print(f"{server_status}  Nome do Servidor: {
                 server['server'].properties.get(b'server_name').decode('utf-8')}")
             print(f"  Endereço IP: {socket.inet_ntoa(
                 server['server'].addresses[0])}")
             print(f"  Porta: {server['server'].port}")
+            print()
         self.__servers_Lock.release()
 
     def __connect_to_server(self, host, port) -> socket.socket:
@@ -616,27 +646,37 @@ class Client:
             Exception: Se ocorrer qualquer outra exceção.
         """
         try:
-            name_server = ""
+            # Inicializa a thread de monitoramento de servidores ativos
             thread_discover_servers = Thread(target=self.__discover_servers)
             thread_discover_servers.start()
+
+            # Inicializa a thread de gerenciamento de tempo de vida dos servidores, que roda a cada 1s
+            thread_manage_servers_ttl = Thread(target=self.manage_servers_ttl)
+            thread_manage_servers_ttl.start()
+            
             sleep(3)
+            name_server = ""
             while not name_server:
-                print(
-                    "\033[90mAperte ENTER para atualizar a lista de servidores\033[0m")
-                self.__show_servers()
-                name_server = input("Digite o nome do servidor: ")
-
-                if not name_server:
-                    continue
-
-                server = self.__servers.get(name_server)
-                if server:
-                    host, port = socket.inet_ntoa(server["server"].addresses[0]), server["server"].port
-                    self.__sock = self.__connect_to_server(host, port)
-                else:
+                try:
+                    self.__show_servers()
                     print(
-                        "Servidor não encontrado. Verifique se o servidor está ativo e tente novamente.")
-                    name_server = ""
+                        "\033[90mAperte ENTER para atualizar a lista de servidores\033[0m")
+                    name_server = input("\nDigite o nome do servidor> ")
+
+                    if not name_server:
+                        continue
+
+                    server = self.__servers.get(name_server)
+                    if server:
+                        host, port = socket.inet_ntoa(server["server"].addresses[0]), server["server"].port
+                        self.__sock = self.__connect_to_server(host, port)
+                    else:
+                        print(
+                            "Servidor não encontrado. Verifique se o servidor está ativo e tente novamente.")
+                        name_server = ""
+                except KeyboardInterrupt:
+                    print('\nPoxa, que pena que você não quis jogar :(')
+                    sys.exit(0)
             self.__print_welcome_message()
             self.__user_name = self.__get_username()
 

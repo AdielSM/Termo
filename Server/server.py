@@ -105,7 +105,7 @@ class Server:
         while True:
             self.__zeroconf.register_service(info)
             sleep(time_interval_sec)
-            self.__zeroconf.unregister_service(info)
+            self.__zeroconf.unregister_all_services()
 
     def __get_active_network_interface_ip(self):
         try:
