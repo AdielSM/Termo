@@ -96,7 +96,7 @@ class Client:
             print(f"  Porta: {server['server'].port}")
         self.__servers_Lock.release()
 
-    def __connect_to_server(self):
+    def __connect_to_server(self) -> socket.socket:
         """
         Estabelece uma conexão com o servidor.
 
@@ -111,11 +111,11 @@ class Client:
             com o servidor após 5 tentativas.
         """
         name_server = ""
-        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         thread_discover_servers = Thread(target=self.__discover_servers)
         thread_discover_servers.start()
         sleep(3)
         while not name_server:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 print(
                     "\033[90mAperte ENTER para atualizar a lista de servidores\033[0m")
@@ -127,10 +127,10 @@ class Client:
 
                 server = self.__servers.get(name_server)
                 if server:
-                    self.__sock.connect(
-                        (socket.inet_ntoa(server["server"].addresses[0]), server["server"].port))
+                    host, port = socket.inet_ntoa(server["server"].addresses[0]), server["server"].port
+                    sock.connect((host, port))
                     self.__game_status = GameStatus.NO_GAME
-                    break
+                    return sock
                 else:
                     raise socket.error(
                         "Servidor não encontrado. Verifique se o servidor está ativo e tente novamente.")

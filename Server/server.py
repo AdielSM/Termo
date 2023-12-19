@@ -71,10 +71,7 @@ class Server:
                 except OSError:
                     print('Não foi possível iniciar o servidor. Verifique sua conexão de rede e tente novamente')
                     sys.exit(0)
-            finally:
-                thread_advertise = Thread(target=self.__advertise_service)
-                thread_advertise.start()
-                
+
             self.__sock.listen(10)
 
     @classmethod
@@ -120,7 +117,10 @@ class Server:
                 if interface != 'lo':
                     for addr in addrs:
                         if addr.family == socket.AF_INET:
-                            return addr.address
+                        # Verifica se o endereço IP está no intervalo 192.168.0.0/16 ou 10.0.0.0/8, fazendo parte de uma rede local
+                            ip_parts = addr.address.split('.')
+                            if ip_parts[0] == '10' or (ip_parts[0] == '192' and ip_parts[1] == '168'):
+                                return addr.address
 
         except Exception as e:
             print(f"Erro ao obter endereço IP: {e}")
@@ -478,6 +478,10 @@ class Server:
             Exception: Caso ocorra algum erro ao lidar com o cliente.
 
         """
+
+        # Inicia anúncio do servidor na rede
+        thread_advertise = Thread(target=self.__advertise_service)
+        thread_advertise.start()
         while True:
             try:
                 con, cliente = self.__sock.accept()
