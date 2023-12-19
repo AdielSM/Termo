@@ -428,6 +428,12 @@ class Server:
                 con, cliente = self.__sock.accept()
                 t = Thread(target=self.handle_client, args=(con, cliente))
                 t.start()
+                
+            except KeyboardInterrupt:
+                print("Servidor encerrado.")
+                sys.exit(0)
+                
             except Exception as e:
                 print(f"Erro ao lidar com o cliente: {e}")
+                
                 
