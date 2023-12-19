@@ -90,11 +90,14 @@ class Server:
     def __advertise_service(self):
         # Configuração do serviço
         local_ip = self.__get_active_network_interface_ip()
+        print(f"Endereço IP local: {local_ip}")
+        print(f"Porta: {self.__PORT}")
+
         local_ip = socket.inet_aton(local_ip)
         time_interval_sec = 3
 
         # Escolhe um nome para o servidor
-        server_name = input("Escolha o nome para esse servidor ser encontrado> ")
+        server_name = input("\nEscolha o nome para esse servidor ser encontrado> ")
 
         try:
             info = ServiceInfo(f"Termo._{server_name}._server._tcp.local.",
@@ -108,8 +111,8 @@ class Server:
                 self.__zeroconf.unregister_all_services()
         except KeyboardInterrupt:
             exit(0)
-        except Zeroconf.NonUniqueNameException:
-            print("Nome de servidor já em uso. Tente novamente")
+        except:
+            print("Erro ao anunciar o servidor, nome pode já estar em uso. Tente novamente")
             self.__advertise_service()
 
     def __get_active_network_interface_ip(self):
