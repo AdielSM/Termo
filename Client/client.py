@@ -184,7 +184,7 @@ class Client:
         """
         Exibe uma mensagem de boas-vindas.
         """
-        print(f"\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}")
+        print(f"\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}\n")
 
 
     def __get_username(self) -> str:
@@ -600,15 +600,26 @@ class Client:
                 except KeyboardInterrupt:
                     self.__handle_keyboard_interrupt()
 
+                except WindowsError:
+                    print("Ocorreu um erro ao conectar ao servidor. Provavelmente o servidor está offline.")
+                    self.__sock.close()
+                    sys.exit(0)
+
                 except ValueError as e:
-                    print(str(e))  
+                    print(str(e)) 
                     continue
 
                 except Exception as e:
                     print(str(e))  
                     continue
 
+        except KeyboardInterrupt:
+            print('\nPoxa, que pena que você não quis jogar :(')
+
+        except WindowsError:
+            print("Ocorreu um erro ao conectar ao servidor. Provavelmente o servidor está offline. ")
+            self.__sock.close()
+            sys.exit(0)
+
         except Exception as e:
             print(str(e))  
-        return
-
