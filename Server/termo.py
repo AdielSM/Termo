@@ -30,6 +30,15 @@ class Termo:
         word_bank (AVLtree): Árvore AVL que armazena o banco de palavras.
         termo_word_bank (AVLtree): Árvore AVL que armazena o banco de palavras específico do jogo termo.
         protocol (summary_protocol): Objeto que contém o protocolo do jogo termo.
+
+    Métodos:
+        start_game(attempts_number: int = 5, unlimited_attempts:bool = False): Inicia o jogo com o número especificado de tentativas.
+        get_termo_words(): Retorna a lista de palavras específicas do jogo termo.
+        game_not_started(): Verifica se o jogo não foi iniciado.
+        check_word(word: str): Verifica se a palavra fornecida é válida de acordo com as regras do jogo.
+        __choose_random_word(): Escolhe uma palavra aleatória do banco de palavras específico do jogo termo.
+        __create_word_dict(letters: str): Cria um dicionário onde as chaves são as letras da palavra e os valores são as posições onde as letras aparecem na palavra.
+        __generate_feedback(word: str): Gera o feedback para uma palavra com base na palavra do jogo.
     """
 
     word_bank: AVLtree = AVLtree()
@@ -82,6 +91,9 @@ class Termo:
         """
         Retorna a palavra do jogo.
 
+        Args:
+            None
+
         Returns:
             str: A palavra do jogo.
         """
@@ -92,6 +104,9 @@ class Termo:
         """
         Retorna o número de tentativas restantes.
 
+        Args:
+            None
+
         Returns:
             int: O número de tentativas restantes.
         """
@@ -100,6 +115,9 @@ class Termo:
     def get_termo_words(self) -> List[str]:
         """
         Retorna a lista de palavras específicas do jogo termo.
+
+        Args:
+            None
 
         Returns:
             List[str]: A lista de palavras específicas do jogo termo.
@@ -110,6 +128,9 @@ class Termo:
         """
         Verifica se o jogo não foi iniciado.
 
+        Args:
+            None
+
         Returns:
             bool: True se o jogo não foi iniciado, False caso contrário.
         """
@@ -118,6 +139,9 @@ class Termo:
     def __choose_random_word(self) -> str:
         """
         Escolhe uma palavra aleatória do banco de palavras específico do jogo termo.
+
+        Args:
+            None
 
         Returns:
             str: A palavra escolhida aleatoriamente.

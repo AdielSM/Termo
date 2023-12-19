@@ -13,6 +13,10 @@ from utils import summary_protocol, server_config
 class PlayerFactory:
     """
     Classe responsável por criar um player ativo.
+
+    Métodos:
+        make_player_active(cliente, con, user_name): Cria um player ativo com base no cliente e conexão fornecidos.
+
     """
     @staticmethod
     def make_player_active(cliente, con, user_name) -> Player:
@@ -34,6 +38,24 @@ class PlayerFactory:
 class Server:
     """
     Classe responsável por representar o servidor do jogo.
+
+    Métodos:
+        get_instance(): Retorna a instância única da classe.
+        __make_player_active(cliente, con, user_name): Cria um player ativo com base no cliente e conexão fornecidos.
+        __remove_player_active(cliente): Remove um player ativo com base no cliente fornecido.
+        __get_current_player(cliente): Retorna o objeto player correspondente ao cliente fornecido.
+        __start_game(current_player, cliente, con, parameter): Inicia um novo jogo para o jogador atual.
+        __restart_game(current_player): Reinicia o jogo para o cliente especificado.
+        __continue_game(current_player): Continua o jogo para o player atual.
+        __exit_game(cliente): Remove o jogador ativo do jogo e retorna um dicionário com o código de status.
+        __check_word(current_player, parameter): Verifica se a palavra fornecida pelo player está correta ou incorreta.
+        __list_words(current_player): Retorna um dicionário contendo o código de status para listar as palavras.
+        __invalid_command(current_player): Função que retorna um dicionário com o código de status e, opcionalmente, 
+        o número de tentativas restantes.
+        __process_client_message(msg, con, cliente): Processa a mensagem recebida do cliente.
+        handle_client(con, cliente): Lida com um cliente conectado ao servidor.
+        run(): Inicia a execução do servidor, aguardando a conexão de clientes e tratando cada cliente 
+        em uma thread separada.
     """
 
     _instance = None
@@ -63,6 +85,9 @@ class Server:
     def get_instance(cls) -> 'Server':
         """
         Retorna a instância única da classe.
+
+        Args:
+            cls (Server): A classe Server.
         
         Returns:
             Server: A instância única da classe.
@@ -96,10 +121,10 @@ class Server:
         Remove um player ativo com base no cliente fornecido.
 
         Args:
-        - cliente: O cliente do playera ser removido.
+            cliente: O cliente do playera ser removido.
 
         Returns:
-        - PlayerNotFoundException: Se o player não for encontrado na lista de players ativos.
+            PlayerNotFoundException: Se o player não for encontrado na lista de players ativos.
         """
 
         for player in self.__active_players:
@@ -116,10 +141,10 @@ class Server:
         Retorna o objeto player correspondente ao cliente fornecido.
 
         Args:
-        - cliente: O cliente para o qual se deseja obter o jogador correspondente.
+            cliente: O cliente para o qual se deseja obter o jogador correspondente.
 
         Returns:
-        - O objeto player correspondente ao cliente fornecido, ou None se não for encontrado.
+            O objeto player correspondente ao cliente fornecido, ou None se não for encontrado.
         """
         for player in self.__active_players:
             if player.client == client:
@@ -131,9 +156,10 @@ class Server:
         Inicia um novo jogo para o jogador atual.
 
         Args:
-            jcurrent_player (Player): O jogador atual.
+            current_player (Player): O jogador atual.
             client (str): O cliente conectado.
             con (socket): O objeto de conexão do cliente.
+            parameter (str): O parâmetro fornecido pelo cliente.
 
         Returns:
             dict: Um dicionário contendo o código de status da operação.
@@ -181,10 +207,10 @@ class Server:
         Continua o jogo para o player atual.
 
         Args:
-        - current_player: O player atual.
+            current_player: O player atual.
 
         Retorna:
-        Um dicionário contendo o código de status da operação.
+            Um dicionário contendo o código de status da operação.
         """
         if not current_player:
             return {
@@ -202,15 +228,15 @@ class Server:
         Remove o jogador ativo do jogo e retorna um dicionário com o código de status.
 
         Args:
-        - client: O cliente que está saindo do jogo.
+            client: O cliente que está saindo do jogo.
 
         Returns:
-        Um dicionário com o código de status, que pode ser:
-        - 'JOGO_ENCERRADO': Indica que o jogo foi encerrado com sucesso.
-        - 'JOGO_NAO_INICIADO': Indica que o jogo não foi iniciado.
+            Um dicionário com o código de status, que pode ser:
+                'JOGO_ENCERRADO': Indica que o jogo foi encerrado com sucesso.
+                'JOGO_NAO_INICIADO': Indica que o jogo não foi iniciado.
 
         Raises:
-        - PlayerNotFoundException: Se o jogador não for encontrado na lista de jogadores ativos.
+            PlayerNotFoundException: Se o jogador não for encontrado na lista de jogadores ativos.
         """
         try:
             self.__remove_player_active(client)
@@ -228,14 +254,12 @@ class Server:
         Verifica se a palavra fornecida pelo player está correta ou incorreta.
         
         Args:
-        - current_player: O player atual.
-        - parameter: A palavra fornecida pelo player.
+            current_player: O player atual.
+            parameter: A palavra fornecida pelo player.
         
         Returns:
-        Um dicionário contendo o código de status e outras informações relevantes, 
-        como a pontuação do player,
-        o número de tentativas restantes e a palavra secreta 
-        (caso o player tenha esgotado todas as tentativas).
+            Um dicionário contendo o código de status e outras informações relevantes, como a pontuação do player, 
+            o número de tentativas restantes e a palavra secreta (caso o player tenha esgotado todas as tentativas).
         """
 
         if not current_player:
@@ -298,10 +322,10 @@ class Server:
         Retorna um dicionário contendo o código de status para listar as palavras.
 
         Args:
-        - current_player: O player atual.
+            current_player: O player atual.
 
         Returns:
-        Um dicionário contendo o código de status para listar as palavras.
+            Um dicionário contendo o código de status para listar as palavras.
         """
 
         if not current_player:
@@ -317,15 +341,13 @@ class Server:
 
     def __invalid_command(self, current_player):
         """
-        Função que retorna um dicionário com o código de status e, opcionalmente, 
-        o número de tentativas restantes.
+        Função que retorna um dicionário com o código de status e, opcionalmente, o número de tentativas restantes.
 
         Args:
             current_player (Player): O player atual.
 
         Returns:
-            dict: Um dicionário contendo o código de status e, caso haja um jogo, 
-            o número de tentativas restantes.
+            dict: Um dicionário contendo o código de status e, caso haja um jogo, o número de tentativas restantes.
         """
         if current_player:
             return {
@@ -395,11 +417,14 @@ class Server:
         Lida com um cliente conectado ao servidor.
 
         Args:
-        - con: objeto de conexão do cliente.
-        - client: informações do cliente conectado.
+            con: objeto de conexão do cliente.
+            client: informações do cliente conectado.
+
+        Returns:
+            None
 
         Raises:
-        - Exception: Se ocorrer um erro ao lidar com o cliente.
+            Exception: Se ocorrer um erro ao lidar com o cliente.
         
         """
         while True:
@@ -418,6 +443,12 @@ class Server:
         """
         Inicia a execução do servidor, aguardando a conexão de clientes e tratando cada cliente 
         em uma thread separada.
+
+        Args:
+            None
+        
+        Returns:
+            None
 
         Raises:
             Exception: Caso ocorra algum erro ao lidar com o cliente.

@@ -4,6 +4,9 @@ def load_words() -> list:
     """
     Carrega as palavras do arquivo e retorna uma lista de palavras.
 
+    Args:
+        None
+
     Returns:
         list: Uma lista de palavras carregadas do arquivo.
     """

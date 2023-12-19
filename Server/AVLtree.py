@@ -76,10 +76,10 @@ class AVLtree:
         """
         Realiza uma rotação para a direita na árvore AVL.
 
-        Parâmetros:
+        Args:
         - y: O nó a ser rotacionado para a direita.
 
-        Retorna:
+        Returns:
         - O novo nó raiz após a rotação.
 
         """
@@ -177,6 +177,12 @@ class AVLtree:
     def pre_order(self) -> None:
         """
         Realiza uma travessia pré-ordem na árvore AVL.
+
+        Args:
+            self: A árvore AVL.
+
+        Returns:
+            None
         """
         self.__pre_order(self.__root)
 
@@ -200,6 +206,9 @@ class AVLtree:
     def in_order(self) -> None:
         """
         Realiza uma travessia em ordem na árvore AVL.
+
+        Args:
+            self: A árvore AVL.
 
         Returns:
             None
@@ -226,6 +235,12 @@ class AVLtree:
     def post_order(self) -> None:
         """
         Executa uma travessia pós-ordem na árvore AVL.
+
+        Args:
+            self: A árvore AVL.
+
+        Returns:
+            None
 
         """
         self.__post_order(self.__root)
@@ -311,6 +326,9 @@ class AVLtree:
         """
         Retorna a lista de elementos da árvore AVL.
 
+        Args:
+            self: A árvore AVL.
+
         Returns:
             List[any]: A lista de elementos da árvore AVL.
         """
@@ -320,6 +338,9 @@ class AVLtree:
     def get_random(self) -> any:
         """
         Retorna um elemento aleatório da lista.
+
+        Args:
+            self: A árvore AVL.
         
         Returns:
             (any) Um elemento aleatório da árvore

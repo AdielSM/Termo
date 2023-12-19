@@ -6,6 +6,14 @@ from .termo import Termo
 class Player:
     """
     Classe que representa um jogador do jogo.
+
+    Métodos:
+        reset_round_start_time(): Reseta o tempo de início da rodada para None.
+        turn_start(): Inicia o turno do jogador.
+        add_score(remaining_attempts:int): Adiciona a pontuação do jogador com base no número de tentativas restantes 
+        e no tempo em segundos que a rodada durou.
+        restart(): Reinicia o jogador, limpando os scores das rodadas anteriores,
+        reiniciando a rodada atual e iniciando um novo jogo.
     """
     def __init__(self, client: str, con: str, user_name: str) -> None:
         self.__client = client
@@ -53,6 +61,12 @@ class Player:
     def reset_round_start_time(self) -> None:
         """
         Reseta o tempo de início da rodada para None.
+
+        Args:
+            None
+
+        Returns:
+            None
         """
         self.__round_start_time = None
 
@@ -61,21 +75,23 @@ class Player:
         """
         Inicia o turno do jogador.
 
+        Args:
+            None
+
         Returns:
-        None
+            None
         """
         self.__round_start_time = time()
 
     def add_score(self, remaining_attempts:int) -> None:
         """
-        Adiciona a pontuação do jogador com base no número de tentativas restantes 
-        e no tempo em segundos que a rodada durou.
+        Adiciona a pontuação do jogador com base no número de tentativas restantes e no tempo em segundos que a rodada durou.
 
-        Parâmetros:
-        remaining_attempts (int): O número de tentativas restantes.
+        Args:
+            remaining_attempts (int): O número de tentativas restantes.
 
-        Retorna:
-        None
+        Returns:
+            None
         """
 
         if remaining_attempts != 0:    
@@ -101,8 +117,12 @@ class Player:
 
     def restart(self):
         """
-        Reinicia o jogador, limpando os scores das rodadas anteriores,
-        reiniciando a rodada atual e iniciando um novo jogo.
+        Reinicia o jogador, limpando os scores das rodadas anteriores, reiniciando a rodada atual e iniciando um novo jogo.
+
+        Args:
+            None
+        Returns:
+            None
         """
         self.__rounds_scores = {}
         self.__current_round = 1
@@ -114,7 +134,10 @@ class Player:
         """
         Retorna uma string que representa o objeto.
 
+        Args:
+            None
+
         Returns:
-        str: Uma string que representa o objeto.
+            str: Uma string que representa o objeto.
         """
         return f"Jogador: {self.__user_name} - Conexão: {self.__con} - Pontuação Total: {self.__total_score}"
