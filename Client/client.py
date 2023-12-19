@@ -258,12 +258,16 @@ class Client:
         """
         Solicita ao usuário um nickname.
         """
-        user_name = input("Digite seu nome de usuário: ")
+        try:
+            user_name = input("Digite seu nome de usuário: ")
 
-        if user_name.strip() == "":
-            return "Anônimo"
+            if user_name.strip() == "":
+                return "Anônimo"
 
-        return user_name
+            return user_name
+        except KeyboardInterrupt:
+            print('\nPoxa, que pena que você não quis jogar :(')
+            sys.exit(0)
 
     def __get_user_command(self) -> str:
         """
