@@ -8,7 +8,6 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 
 - [Funcionalidades](#-funcionalidades)
 - [Instalação](#-instalação)
-- [Como jogar](#-como-jogar)
 - [Tecnologias](#-tecnologias)
 - [Autores](#-autores)
 - [Próximos passos](#-próximos-passos)	
@@ -92,8 +91,18 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 |:---:|:---:|:---:|
 | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Adiel-blue)](https://www.linkedin.com/in/adiel-melo-073009273/) [![GitHub](https://img.shields.io/badge/GitHub-AdielSM-black)](https://github.com/AdielSM) | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Caio-blue)](https://www.linkedin.com/in/caio-soares-8b8a81251) [![GitHub](https://img.shields.io/badge/GitHub-Caio1-black)](https://github.com/caiosoares1) | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Carlos-blue)](https://www.linkedin.com/in/jovemcarlos/) [![GitHub](https://img.shields.io/badge/GitHub-CarlosTI-black)](https://github.com/JovemCarlosTI) |
 
+## 📚 Disciplinas
 
+- Estruturas de Dados (Alex Sandro Rêgo)
+- Sistemas Operacionais (Gustavo Wagner)
+- Protocolos de Interconexão de Redes de Computadores (Leonidas Lima)
 
+## 📂 Arquivos do Projeto
+
+| Pasta/Arquivo | Descrição |
+|:---------------:|:---------------:|
+| 📂Client/ | Pasta responsável por gerenciar o funcionamento do Cliente|
+| - 📄__init__.py | Arquivo de inicialização que importa a Classe Client |
 
 ## 👟 Próximos passos
 
