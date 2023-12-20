@@ -103,22 +103,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 
 
     "word_encoded": [
-        {
-            "index": 0,
-            "modification": 2
-        },
-        {
-            "index": 1,
-            "modification": 1
-        },
-        {
-            "index": 2,
-            "modification": 1 
-        },
-        {
-            "index": 4,
-            "modification": 0
-        }
+        [0,1,2,0,1]
     ],
 
 
@@ -140,22 +125,7 @@ Envia uma palavra para validação no lado do servidor (checando se acertou)
 
 
     "word_encoded": [
-        {
-            "index": 0,
-            "modification": 2
-        },
-        {
-            "index": 1,
-            "modification": 1
-        },
-        {
-            "index": 2,
-            "modification": 1 
-        },
-        {
-            "index": 4,
-            "modification": 0
-        }
+        [0,1,2,0,1]
     ],
 
 
