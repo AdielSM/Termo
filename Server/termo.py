@@ -86,6 +86,21 @@ class Termo:
         self.__words_stack: LinkedStack = LinkedStack()
         self.__game_status = TermoStatus.GAME_WITH_TRY
 
+
+    @property
+    def game_status(self) -> TermoStatus:
+        """
+        Retorna o estado do jogo.
+
+        Args:
+            None
+
+        Returns:
+            TermoStatus: O estado do jogo.
+        """
+        return self.__game_status
+
+
     @property
     def secret_word(self) -> str:
         """

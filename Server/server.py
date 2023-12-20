@@ -1,17 +1,16 @@
 # pylint: disable= E0611 C0103 W0718
 
 from time import sleep, time
-import psutil
+from threading import Thread, Lock
 import socket
 import json
 import sys
+import psutil
 from zeroconf import ServiceInfo, Zeroconf, NonUniqueNameException
-from threading import Thread, Lock
 
-from Server import Player, Termo, PlayerNotFoundException, SingletonException
+from Server import Player, Termo, TermoStatus, PlayerNotFoundException, SingletonException
 
 from utils import summary_protocol, server_config
-import socket
 
 
 class PlayerFactory:
@@ -46,6 +45,7 @@ class Server:
     Métodos:
         run(): Inicia a execução do servidor, aguardando a conexão de clientes e tratando 
         cada cliente em uma thread separada.
+        get_instance(): Retorna a instância única da classe.
     """
 
     _instance = None
@@ -54,32 +54,31 @@ class Server:
         if Server._instance is not None:
             raise SingletonException("Esta classe é um Singleton!")
 
-        else:
-            Server._instance = self
-            self.__HOST = '0.0.0.0'
-            self.__TAM_MSG, self.__PORT = server_config()
-            self.__protocol = summary_protocol()
-            self.__zeroconf = Zeroconf()
-            self.__active_players = []
-            self.__active_players_lock = Lock()
-            # self.__parties = []
-            # self.__parties_lock = Lock()
-            self.__last_msgs_clients = {}
-            self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        Server._instance = self
+        self.__HOST = '0.0.0.0'
+        self.__TAM_MSG, self.__PORT = server_config()
+        self.__protocol = summary_protocol()
+        self.__zeroconf = Zeroconf()
+        self.__active_players = []
+        self.__active_players_lock = Lock()
+        # self.__parties = []
+        # self.__parties_lock = Lock()
+        self.__last_msgs_clients = {}
+        self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            self.__sock.bind((self.__HOST, self.__PORT))
+        except OSError:
             try:
-                self.__sock.bind((self.__HOST, self.__PORT))
+                # Tenta conexão em porta dinâmica
+                self.__sock.bind((self.__HOST, 0))
+                self.__PORT = self.__sock.getsockname()[1]
+                print(f"Não foi possível iniciar o servidor. Tentando conexão na porta {self.__PORT}")
             except OSError:
-                try:
-                    # Tenta conexão em porta dinâmica
-                    self.__sock.bind((self.__HOST, 0))
-                    self.__PORT = self.__sock.getsockname()[1]
-                    print(f"Não foi possível iniciar o servidor. Tentando conexão na porta {self.__PORT}")
-                except OSError:
-                    print('Não foi possível iniciar o servidor. Verifique sua conexão de rede e tente novamente')
-                    sys.exit(0)
+                print('Não foi possível iniciar o servidor. Verifique sua conexão de rede e tente novamente')
+                sys.exit(0)
 
-            self.__sock.listen(10)
-            Thread(target=self.__verify_time_last_msg).start()
+        self.__sock.listen(10)
+        Thread(target=self.__verify_time_last_msg).start()
 
     @classmethod
     def get_instance(cls) -> 'Server':
@@ -293,38 +292,19 @@ class Server:
         """
         if not current_player:
             return {
-                "status_code": self.__protocol['JOGO_NAO_INICIADO'],
+                "status_code": self.__protocol['JOGO_NAO_INICIADO']
+            }
+
+        if current_player.game.game_status not in [TermoStatus.VICTORY, TermoStatus.DEFEAT]:
+            return {
+                "status_code": self.__protocol['JOGO_COM_TENTATIVAS_VALIDAS'],
+                "remaining_attempts": current_player.game.remaining_attempts
             }
 
         current_player.game.start_game()
         return {
-            "status_code" : self.__protocol['JOGO_CONTINUADO'],
+            "status_code" : self.__protocol['JOGO_CONTINUADO']
         }
-
-    def __exit_game(self, client):
-        """
-        Remove o jogador ativo do jogo e retorna um dicionário com o código de status.
-
-        Args:
-            client: O cliente que está saindo do jogo.
-
-        Returns:
-            Um dicionário com o código de status, que pode ser:
-                'JOGO_ENCERRADO': Indica que o jogo foi encerrado com sucesso.
-                'JOGO_NAO_INICIADO': Indica que o jogo não foi iniciado.
-
-        Raises:
-            PlayerNotFoundException: Se o jogador não for encontrado na lista de jogadores ativos.
-        """
-        try:
-            self.__remove_player_active(client)
-            return {
-                "status_code": self.__protocol['JOGO_ENCERRADO'],
-            }
-        except PlayerNotFoundException:
-            return {
-                "status_code": self.__protocol['JOGO_NAO_INICIADO'],
-            }
 
     def __check_word(self, current_player, parameter):
         """
@@ -358,7 +338,7 @@ class Server:
 
         if isinstance(feedback,int):
 
-            if feedback == 202:
+            if feedback == 201:
                 current_player.add_score(current_player.game.remaining_attempts)
 
                 return {
@@ -455,7 +435,7 @@ class Server:
         """
         try:
             data = json.loads(msg.decode())
-            print('Conectei com', client, data)
+            print('Recebi de ', client, 'os comandos:', data)
 
             command = data.get('command').lower()
             parameter = data.get('parameter')
@@ -471,9 +451,6 @@ class Server:
 
                 case "continue_game":
                     data = self.__continue_game(current_player)
-
-                case "exit_game":
-                    data = self.__exit_game(client)
 
                 case "check_word":
                     data = self.__check_word(current_player, parameter)
@@ -549,12 +526,13 @@ class Server:
         while True:
             try:
                 con, cliente = self.__sock.accept()
+                print('Conectei com ', cliente)
                 t = Thread(target=self.handle_client, args=(con, cliente))
                 t.start()
-                
+
             except KeyboardInterrupt:
                 print("Servidor encerrado.")
                 sys.exit(0)
-                
+
             except Exception as e:
                 print(f"Erro ao lidar com o cliente: {e}")
