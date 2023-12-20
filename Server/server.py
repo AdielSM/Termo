@@ -1,17 +1,15 @@
 # pylint: disable= E0611 C0103 W0718
 
-from random import randint
-from time import sleep
+from time import sleep, time
 import psutil
 import socket
 import json
 import sys
-from zeroconf import ServiceInfo, Zeroconf
+from zeroconf import ServiceInfo, Zeroconf, NonUniqueNameException
 from threading import Thread, Lock
 
 from Server import Player, Termo, PlayerNotFoundException, SingletonException
 
-from .words_loader import load_words
 from utils import summary_protocol, server_config
 import socket
 
@@ -46,22 +44,8 @@ class Server:
     Classe responsável por representar o servidor do jogo.
 
     Métodos:
-        get_instance(): Retorna a instância única da classe.
-        __make_player_active(cliente, con, user_name): Cria um player ativo com base no cliente e conexão fornecidos.
-        __remove_player_active(cliente): Remove um player ativo com base no cliente fornecido.
-        __get_current_player(cliente): Retorna o objeto player correspondente ao cliente fornecido.
-        __start_game(current_player, cliente, con, parameter): Inicia um novo jogo para o jogador atual.
-        __restart_game(current_player): Reinicia o jogo para o cliente especificado.
-        __continue_game(current_player): Continua o jogo para o player atual.
-        __exit_game(cliente): Remove o jogador ativo do jogo e retorna um dicionário com o código de status.
-        __check_word(current_player, parameter): Verifica se a palavra fornecida pelo player está correta ou incorreta.
-        __list_words(current_player): Retorna um dicionário contendo o código de status para listar as palavras.
-        __invalid_command(current_player): Função que retorna um dicionário com o código de status e, opcionalmente, 
-        o número de tentativas restantes.
-        __process_client_message(msg, con, cliente): Processa a mensagem recebida do cliente.
-        handle_client(con, cliente): Lida com um cliente conectado ao servidor.
-        run(): Inicia a execução do servidor, aguardando a conexão de clientes e tratando cada cliente 
-        em uma thread separada.
+        run(): Inicia a execução do servidor, aguardando a conexão de clientes e tratando 
+        cada cliente em uma thread separada.
     """
 
     _instance = None
@@ -80,6 +64,7 @@ class Server:
             self.__active_players_lock = Lock()
             # self.__parties = []
             # self.__parties_lock = Lock()
+            self.__last_msgs_clients = {}
             self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 self.__sock.bind((self.__HOST, self.__PORT))
@@ -88,13 +73,13 @@ class Server:
                     # Tenta conexão em porta dinâmica
                     self.__sock.bind((self.__HOST, 0))
                     self.__PORT = self.__sock.getsockname()[1]
-                    print(
-                        f"Não foi possível iniciar o servidor. Tentando conexão na porta {self.__PORT}")
+                    print(f"Não foi possível iniciar o servidor. Tentando conexão na porta {self.__PORT}")
                 except OSError:
                     print('Não foi possível iniciar o servidor. Verifique sua conexão de rede e tente novamente')
                     sys.exit(0)
 
             self.__sock.listen(10)
+            Thread(target=self.__verify_time_last_msg).start()
 
     @classmethod
     def get_instance(cls) -> 'Server':
@@ -112,6 +97,26 @@ class Server:
             cls._instance = Server()
         return cls._instance
 
+
+    def __verify_time_last_msg(self):
+        while True:
+            if self.__active_players:  
+                current_time = time()
+                clients_to_remove = []
+
+                for player, last_msg_time in self.__last_msgs_clients.items():
+                    if current_time - last_msg_time > 90:
+                        clients_to_remove.append(player)
+
+                if clients_to_remove:
+                    for player in clients_to_remove:
+                        if player is not None:
+                            self.__remove_player_active(player.client)
+                            print(f"Cliente {player.client} desconectado por inatividade")
+
+            sleep(10)
+
+
     def __advertise_service(self):
         # Configuração do serviço
         local_ip = self.__get_active_network_interface_ip()
@@ -122,7 +127,10 @@ class Server:
         time_interval_sec = 3
 
         # Escolhe um nome para o servidor
+
         server_name = input("\nEscolha o nome para esse servidor ser encontrado> ")
+        while server_name.strip() == "":
+            server_name = input("\nEscolha um nome válido para esse servidor ser encontrado> ")
 
         try:
             info = ServiceInfo(f"Termo._{server_name}._server._tcp.local.",
@@ -135,12 +143,19 @@ class Server:
                 sleep(time_interval_sec)
                 self.__zeroconf.unregister_all_services()
         except KeyboardInterrupt:
-            exit(0)
-        except:
+            sys.exit(0)
+        except NonUniqueNameException:
             print("Erro ao anunciar o servidor, nome pode já estar em uso. Tente novamente")
             self.__advertise_service()
+            
 
     def __get_active_network_interface_ip(self):
+        """
+        Obtém o endereço IP da interface de rede ativa que pertence a uma rede local.
+
+        Returns:
+            str: O endereço IP da interface de rede ativa.
+        """
         try:
             # Obtém todas as interfaces de rede
             interfaces = psutil.net_if_addrs()
@@ -190,14 +205,15 @@ class Server:
             PlayerNotFoundException: Se o player não for encontrado na lista de players ativos.
         """
 
-        for player in self.__active_players:
-            if player.client == client:
-                with self.__active_players_lock:
-                    self.__active_players.remove(player)
+        player = self.__get_current_player(client)
+
+        if player:
+            with self.__active_players_lock:
+                self.__active_players.remove(player)
+                player.con.close()
                 return
 
-        raise PlayerNotFoundException(
-            'Player não encontrado na lista de players ativos.')
+        raise PlayerNotFoundException('Player não encontrado na lista de players ativos.')
 
     def __get_current_player(self, client):
         """
@@ -317,7 +333,8 @@ class Server:
             parameter: A palavra fornecida pelo player.
         
         Returns:
-            Um dicionário contendo o código de status e outras informações relevantes, como a pontuação do player, 
+            Um dicionário contendo o código de status e outras informações relevantes,
+            como a pontuação do player, 
             o número de tentativas restantes e a palavra secreta (caso o player tenha esgotado todas as tentativas).
         """
 
@@ -399,13 +416,15 @@ class Server:
 
     def __invalid_command(self, current_player):
         """
-        Função que retorna um dicionário com o código de status e, opcionalmente, o número de tentativas restantes.
+        Função que retorna um dicionário com o código de status e, opcionalmente, 
+        o número de tentativas restantes.
 
         Args:
             current_player (Player): O player atual.
 
         Returns:
-            dict: Um dicionário contendo o código de status e, caso haja um jogo, o número de tentativas restantes.
+            dict: Um dicionário contendo o código de status e, caso haja um jogo, 
+            o número de tentativas restantes.
         """
         if current_player:
             return {
@@ -443,8 +462,7 @@ class Server:
 
             match command:
                 case "start_game":
-                    data = self.__start_game(
-                        current_player, client, con, parameter)
+                    data = self.__start_game(current_player, client, con, parameter)
 
                 case "restart_game":
                     data = self.__restart_game(current_player)
@@ -488,13 +506,21 @@ class Server:
         while True:
             try:
                 msg = con.recv(self.__TAM_MSG)
-                if not msg:
-                    break
+
                 self.__process_client_message(msg, con, client)
+
+                with self.__active_players_lock:
+                    self.__last_msgs_clients[self.__get_current_player(client)] = time()
+
+            except OSError as e:
+                if e.winerror == 10053:
+                    print('')
+                    break
+
             except Exception as e:
                 print(f"Erro ao lidar com o cliente: {e}")
                 break
-        con.close()
+
 
     def run(self):
         """
