@@ -76,8 +76,6 @@ Após a inicialização do servidor, é necessário iniciar o cliente do jogo. P
 python run_client.py
 ```
 
-## 🎮 Como jogar
-
 ## 🚀 Tecnologias
 
 As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
@@ -101,7 +99,7 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 
 - [ ] Estabelecer um banco de dados para armazenar os dados dos jogadores para conseguir fazer um ranking com todos os participantes.
 
-- [ ] Implementar um sistema de party para que os jogadores possam jogar em salas contra seus amigos.
+- [ ] Implementar um sistema de party para que os jogadores possam jogar em salas com seus amigos.
 
 - [ ] Implementar um sistema de dicas que possa ser utilizado pelo jogador durante a partida.
 
