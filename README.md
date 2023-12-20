@@ -25,21 +25,15 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
   
 ## 💻 Instalação
 ### 📕 Bibliotecas Utilizadas
-```
-```
-``````
-``````
-```- prettytable==3.9.0: Facilita a criação de tabelas bem formatadas em texto. Ela fornece uma maneira simples de organizar dados em colunas e linhas, tornando a exibição de informações tabulares mais legível e esteticamente agradável. Usado para menu e ranking do jogador.
+- prettytable==3.9.0: Facilita a criação de tabelas bem formatadas em texto. Ela fornece uma maneira simples de organizar dados em colunas e linhas, tornando a exibição de informações tabulares mais legível e esteticamente agradável. Usado para menu e ranking do jogador.
 
 - wcwidth==0.2.12: Essa biblioteca é usada para calcular a largura de caracteres Unicode em uma string. Ela é útil quando precisa lidar com texto que contém caracteres de largura variável, como caracteres de largura dupla usados em alguns idiomas asiáticos, sendo usada para menu e ranking do jogador.
 
-```
-```- zeroconf==0.131.0: Essa biblioteca implementa o protocolo Zeroconf, que permite a descoberta automática de serviços em uma rede local. Ela facilita a comunicação entre dispositivos em uma rede sem a necessidade de configuração manual. É utilizada para o servidor anuncia a cada período de tempo que está disponível na rede local, permitindo que o cliente saiba da sua atividade e liste para o usuário final.
+- zeroconf==0.131.0: Essa biblioteca implementa o protocolo Zeroconf, que permite a descoberta automática de serviços em uma rede local. Ela facilita a comunicação entre dispositivos em uma rede sem a necessidade de configuração manual. É utilizada para o servidor anuncia a cada período de tempo que está disponível na rede local, permitindo que o cliente saiba da sua atividade e liste para o usuário final.
 
 - psutil==5.9.7: Fornece uma interface para acessar informações sobre o sistema operacional em que o código está sendo executado. Ela permite que você obtenha informações sobre o uso da CPU, memória, disco, rede e outros recursos do sistema, sendo usada junto com iifaddr para o servidor retornar seu endereço IP privado.
 
 - iifaddr==0.2.0: Útil quando precisa descobrir quais interfaces de rede estão ativas e quais endereços IP estão associados a elas, sendo usada para o servidor retornar seu endereço IP privado.
-
 ```
 
 ### Passo a Passo
