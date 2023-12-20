@@ -34,7 +34,6 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 - psutil==5.9.7: Fornece uma interface para acessar informações sobre o sistema operacional em que o código está sendo executado. Ela permite que você obtenha informações sobre o uso da CPU, memória, disco, rede e outros recursos do sistema, sendo usada junto com iifaddr para o servidor retornar seu endereço IP privado.
 
 - iifaddr==0.2.0: Útil quando precisa descobrir quais interfaces de rede estão ativas e quais endereços IP estão associados a elas, sendo usada para o servidor retornar seu endereço IP privado.
-```
 
 ### Passo a Passo
 
