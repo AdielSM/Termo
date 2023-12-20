@@ -102,7 +102,7 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 ## 📂 Arquivos do Projeto
 
 | Pasta/Arquivo | Descrição |
-|:---------------:|:---------------:|
+|:------------------|:------------------|
 | 📂Client/ | Pasta que contém os arquivos do Cliente. |
 | - 📄__init__.py | Arquivo de inicialização que importa a Classe Client. |
 | - 📄client.py | Arquivo que possui a responsabilidade de gerenciar o funcionamento do Cliente. |
@@ -115,6 +115,26 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 | - 📄termo.py | Arquivo que possui a responsabilidade de gerenciar o funcionamento do Jogo Termo. |
 | - 📄termo_words_loader.py | Arquivo que carrega as palavras do arquivo de texto e retorna uma lista a partir delas. Essa lista é a que será utilizada durante o funcionamento do Termo. |
 | - 📄words_loader.py | Arquivo que carrega as palavras do arquivo de texto e retorna uma lista a partir delas. |
+| 📂docs/ | Pasta que contém os arquivos de imagens e página de regras |
+| - 📄index.html | Arquivo de regras gerais do jogo Termo. |
+| - 📂img/ | Pasta que contém os arquivos de imagens utilizadas na página de Regras. |
+| 📂img/ | Pasta que contém os arquivos de imagens utilizadas no README. |
+| 📂utils/ | Pasta que contém os arquivos utilitários, como configurações de Servidor e sumário de Protocolo. |
+| - 📄LinkedStack.py | Lista encadeada em python. |
+| - 📄__init__.py | Arquivo que importa a Lista e o sumário de Protocolo. |
+| - 📄server_config.py | Arquivo que retorna as configurações do Servidor. |
+| - 📄server_config.txt | Arquivo que retorna as configurações do Servidor (TAM_MSG e PORT). |
+| - 📄summary_protocol.py | Lê o arquivo 'sumario_protocolo.txt' e retorna um dicionário com as chaves e valores encontrados. |
+| - 📄summary_protocol.txt | Sumário de Protocolo que contém as mensagens enviadas e seu respectivo código de status. |
+| 📂words_bank/ | Pasta que contém os arquivos de imagens utilizadas no README. |
+| - 📄bd.txt | Arquivo que contém um banco de palavras. |
+| - 📄bd_termo.txt | Arquivo que contém um banco de palavras que serão utilizadas no jogo Termo. |
+| 📄.gitIgnore | Arquivo de configuração usado pelo Git para especificar quais arquivos e diretórios devem ser ignorados. |
+| 📄README | Arquivo README. |
+| 📄protocol.md | Arquivo que contém os comandos do protocolo e o status code retornado. |
+| 📄requirements.txt | Arquivo que contém as dependências necessárias para poder iniciar o Termo. |
+| 📄run_client.py | Arquivo para rodar o cliente. |
+| 📄run_server.py | Arquivo para rodar o servidor. |
 
 ## 👟 Próximos passos
 
