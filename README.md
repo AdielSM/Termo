@@ -103,9 +103,18 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 
 | Pasta/Arquivo | Descrição |
 |:---------------:|:---------------:|
-| 📂Client/ | Pasta responsável por gerenciar o funcionamento do Cliente|
-|:---------------|:---------------:|
-| - 📄__init__.py | Arquivo de inicialização que importa a Classe Client |
+| 📂Client/ | Pasta que contém os arquivos do Cliente. |
+| - 📄__init__.py | Arquivo de inicialização que importa a Classe Client. |
+| - 📄client.py | Arquivo que possui a responsabilidade de gerenciar o funcionamento do Cliente. |
+| 📂Server/ | Pasta que contém os arquivos do Servidor. |
+| - 📄AVLtree.py | Arquivo que contém a Árvore Binária de Busca Balanceada. |
+| - 📄__init__.py | Arquivo de inicialização para o Servidor. |
+| - 📄classes_exceptions.py | Arquivo de exceções personalizadas utilizadas no Projeto. |
+| - 📄player.py | Arquivo que possui a Classe que representa um jogador do jogo. |
+| - 📄server.py | Arquivo que possui a responsabilidade de gerenciar o funcionamento do Servidor. |
+| - 📄termo.py | Arquivo que possui a responsabilidade de gerenciar o funcionamento do Jogo Termo. |
+| - 📄termo_words_loader.py | Arquivo que carrega as palavras do arquivo de texto e retorna uma lista a partir delas. Essa lista é a que será utilizada durante o funcionamento do Termo. |
+| - 📄words_loader.py | Arquivo que carrega as palavras do arquivo de texto e retorna uma lista a partir delas. |
 
 ## 👟 Próximos passos
 
