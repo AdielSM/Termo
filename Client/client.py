@@ -400,25 +400,9 @@ class Client:
         return True
 
     def __close_client(self) -> None:
-        req_body = {
-            "command": "exit_game",
-            "parameter": None
-        }
+        self.__sock.close()
+        sys.exit(0)
 
-        try:
-            response_data = self.__send_requisition(req_body)
-            response_status = response_data["status_code"]
-
-            self.__render_response(
-                response_status, player_name=self.__user_name)
-
-            return
-
-        except (OSError, json.JSONDecodeError):
-            print("Ocorreu um erro ao desconectar do servidor, fechando aplicativo...")
-        finally:
-            self.__sock.close()
-            sys.exit(0)
 
     def __game_continued_action(self) -> None:
         """
@@ -675,7 +659,6 @@ class Client:
                 self.__print_goodbye_message()
                 self.__close_client()
 
-
             self.__game_continued_action()
         else:
             self.__render_response(
@@ -734,7 +717,6 @@ class Client:
                 except KeyboardInterrupt:
                     self.__close_client()
                     print('\nPoxa, que pena que você não quis jogar :(')
-                    sys.exit(0)
             self.__print_welcome_message()
             self.__user_name = self.__get_username()
 

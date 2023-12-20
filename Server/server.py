@@ -128,6 +128,7 @@ class Server:
 
         # Escolhe um nome para o servidor
 
+        
         server_name = input("\nEscolha o nome para esse servidor ser encontrado> ")
         while server_name.strip() == "":
             server_name = input("\nEscolha um nome válido para esse servidor ser encontrado> ")
@@ -207,9 +208,10 @@ class Server:
 
         player = self.__get_current_player(client)
 
-        if player:
+        if player and player in self.__active_players:
             with self.__active_players_lock:
                 self.__active_players.remove(player)
+                self.__last_msgs_clients.pop(player)
                 player.con.close()
                 return
 
@@ -506,6 +508,9 @@ class Server:
         while True:
             try:
                 msg = con.recv(self.__TAM_MSG)
+
+                if not msg:
+                    break
 
                 self.__process_client_message(msg, con, client)
 
