@@ -4,5 +4,4 @@ venv
 output
 .vscode
 .pylintrc
-Termo
 myvenv

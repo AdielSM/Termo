@@ -1,6 +1,6 @@
 # pylint: disable = E0401
 
-from .termo import Termo
+from .termo import Termo, TermoStatus
 from .classes_exceptions import *
 from .AVLtree import AVLtree
 from .player import Player

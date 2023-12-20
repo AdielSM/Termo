@@ -9,10 +9,8 @@ import json
 import sys
 from zeroconf import Zeroconf
 from prettytable import PrettyTable
-from utils import server_config, LinkedStack
+from utils import server_config, LinkedStack, summary_protocol
 
-
-from enum import Enum
 
 class GameStatus(Enum):
     """
@@ -44,6 +42,7 @@ class Client:
         self.__zeroconf = Zeroconf()
         self.__servers = {}
         self.__servers_Lock = Lock()
+        self.__protocol = summary_protocol()
         self.__game_status: GameStatus = GameStatus.NO_CONNECTION
         self.__user_name: str = None
         self.__words_stack = LinkedStack()
@@ -92,6 +91,7 @@ class Client:
             
         Raises:
             KeyboardInterrupt: Se o usuário interromper o programa.
+            OSError: Se houver erro ao procurar o servidor com zeroconf
 
         """
         while self.__game_status == GameStatus.NO_CONNECTION:
@@ -225,6 +225,7 @@ class Client:
         o comando e o parâmetro correspondente.
 
         Args:
+            self: A referência para a instância da classe.
             user_command (str): O comando fornecido pelo usuário.
 
         Returns:
@@ -260,6 +261,7 @@ class Client:
         Envia uma requisição para o servidor.
 
         Args:
+            self: A referência para a instância da classe.
             req_body (Dict[str, Any]): O corpo da requisição em formato de dicionário.
 
         Returns:
@@ -279,12 +281,18 @@ class Client:
     def __print_welcome_message(self) -> None:
         """
         Exibe uma mensagem de boas-vindas.
+        
+        Args:
+            self: A referência para a instância da classe.
         """
         print(f"\n{'=' * 50}\nBem vindo ao jogo de palavras Termo!\n{'=' * 50}")
 
     def __get_username(self) -> str:
         """
         Solicita ao usuário um nickname.
+
+        Args:
+            self: A referência para a instância da classe.
         """
         try:
             user_name = input("Digite seu nome de usuário: ")
@@ -300,12 +308,18 @@ class Client:
     def __get_user_command(self) -> str:
         """
         Solicita ao usuário um comando.
+
+        Args:
+            self: A referência para a instância da classe.
         """
         return input('\nTermo> ')
 
     def __print_exit_message(self) -> None:
         """
         Exibe a mensagem de instrução para caso o jogador deseje encerrar o jogo.
+
+        Args:
+            self: A referência para a instância da classe.
         """
         state_to_show = "ocultar" if self.__show_table else "exibir"
         print()
@@ -315,12 +329,18 @@ class Client:
     def __print_end_game_message(self) -> None:
         """
         Exibe uma mensagem de fim de jogo.
+
+        Args:
+            self: A referência para a instância da classe.
         """
         print("\nA rodada acabou! Deseja continuar jogando?")
 
     def __print_goodbye_message(self) -> None:
         """
         Exibe uma mensagem de despedida.
+
+        Args:
+            self: A referência para a instância da classe.
         """
         print(f'\nAté a próxima, {self.__user_name}! Obrigado por jogar o Termo!')
 
@@ -329,8 +349,11 @@ class Client:
         Lida com a interrupção do teclado.
 
         Fecha o socket e encerra o programa com uma mensagem.
+
+        Args:
+            self: A referência para a instância da classe.
         """
-        print(f"\nObrigado por jogar, {self.__user_name}!\n Foi feito com ❤️  em 🐍\n")
+        print(f"\nObrigado por jogar, {self.__user_name}!\nFoi feito com ❤️  em 🐍\n")
         self.__close_client()
 
     def __create_request_body(self, command: str, parameter: Any) -> Dict[str, Any]:
@@ -338,6 +361,7 @@ class Client:
         Cria o corpo da requisição com base no comando e parâmetro fornecidos.
 
         Args:
+            self: A referência para a instância da classe.
             command (str): O comando da requisição.
             parameter (Any): O parâmetro da requisição.
 
@@ -353,6 +377,9 @@ class Client:
         """
         Solicita ao usuário a opção de continuar ou sair do jogo.
 
+        Args:
+            self: A referência para a instância da classe.
+
         Returns:
             str: A opção escolhida pelo usuário ('1' para continuar ou '2' para sair).
         """
@@ -363,20 +390,21 @@ class Client:
 
         return usr_input
 
-    def __return_attempts(self, remaining_attempts, status_code) -> str:
+    def __return_attempts(self, remaining_attempts:int, status_code:int) -> str:
         """
         Retorna uma string com o número de tentativas restantes ou o número de tentativas até agora.
 
         Args:
+            self: A referência para a instância da classe.
             remaining_attempts (int): O número de tentativas restantes.
 
         Returns:
             str: A string contendo o número de tentativas restantes ou o número de tentativas até agora.
         """
-        if remaining_attempts >= 0 and status_code == 202:
-            return '\033[1m' + f'Tentativas Restantes: {remaining_attempts}' '\033[0m'
+        if remaining_attempts >= 0 and status_code == self.__protocol['PALAVRA_CORRETA']:
+            return '\033[1m' + f'Tentativas Restantes: {remaining_attempts - 1}' '\033[0m'
 
-        elif remaining_attempts >= 0:
+        if remaining_attempts >= 0:
             return '\033[1m' + f'Tentativas Restantes: {remaining_attempts}' '\033[0m'
 
         return f"Número de tentativas até agora: {len(self.__words_stack)}"
@@ -386,6 +414,7 @@ class Client:
         Verifica se o jogo deve ser encerrado com base na opção selecionada.
 
         Args:
+            self: A referência para a instância da classe.
             option (str): A opção selecionada.
 
         Returns:
@@ -411,6 +440,9 @@ class Client:
         Envia uma requisição para o servidor solicitando a continuação do jogo.
         Caso a requisição seja bem-sucedida, renderiza a resposta do servidor.
         Caso contrário, exibe uma mensagem de erro.
+
+        Args:
+            self: A referência para a instância da classe.
 
         Raises:
             OSError: Ocorre quando há um erro ao enviar ou receber dados pelo socket.
@@ -443,31 +475,31 @@ class Client:
         Formata a palavra com base na lista de codificação fornecida.
 
         Args:
+            self: A referência para a instância da classe.
             word (str): A palavra a ser formatada.
             format_instructions (list): A lista que contém as instruções de formatação.
 
         Returns:
             str: A string formatada.
         """
-        if word and format_instructions:
-            output = ''
-            for index, items in enumerate(format_instructions):
-                if items == 2:
-                    output += "\033[92m" + word[index] + "\033[0m"
-                elif items == 1:
-                    output += "\033[93m" + word[index] + "\033[0m"
-                else:
-                    output += "\033[90m" + word[index] + "\033[0m"
+        output = ''
+        for index, items in enumerate(format_instructions):
+            if items == 2:
+                output += "\033[92m" + word[index] + "\033[0m"
+            elif items == 1:
+                output += "\033[93m" + word[index] + "\033[0m"
+            else:
+                output += "\033[90m" + word[index] + "\033[0m"
 
-            return output
+        return output
 
-        return
 
     def __secret_word_animation(self, word) -> None:
         """
         Realiza uma animação para exibir a palavra secreta.
 
         Args:
+            self: A referência para a instância da classe.
             word (str): A palavra secreta a ser exibida.
 
         Returns:
@@ -482,11 +514,13 @@ class Client:
             print(''.join(transformed_word))
             sleep(1)
 
+
     def __render_response(self, response_status: int, **extra_info):
         """
         Renderiza a resposta com base no status recebido.
 
         Args:
+            self: A referência para a instância da classe.
             response_status (int): O status da resposta.
             **extra_info: Informações adicionais.
 
@@ -504,6 +538,7 @@ class Client:
         Lida com os casos de sucesso com base no código de status da resposta.
 
         Args:
+            self: A referência para a instância da classe.
             response_status (int): O código de status da resposta.
             **extra_info: Informações adicionais passadas como argumentos de palavra-chave.
 
@@ -516,57 +551,53 @@ class Client:
         secret_word = extra_info.get("secret_word")
         player_name = extra_info.get("player_name")
 
-        match response_status:
-            case 200:
-                print("Jogo Iniciado com Sucesso")
-                print("\n\033[1mTutorial básico:\033[0m")
-                print("\033[90ma\033[0m - Letra não faz parte da palavra")
-                print("\033[93ma\033[0m - Letra faz parte da palavra, mas em outra posição")
-                print("\033[92ma\033[0m - Letra faz parte da palavra nessa posição")
-                print("\033[90mPara mais informações, acesse: \033[4mhttps://adielsm.github.io/Termo/\033[0m")
-                
-                print("Bom jogo!\n")
+        if response_status == self.__protocol['JOGO_INICIADO']:
+            print("Jogo Iniciado com Sucesso")
+            print("\n\033[1mTutorial básico:\033[0m")
+            print("\033[90ma\033[0m - Letra não faz parte da palavra")
+            print("\033[93ma\033[0m - Letra faz parte da palavra, mas em outra posição")
+            print("\033[92ma\033[0m - Letra faz parte da palavra nessa posição")
+            print("\033[90mPara mais informações, acesse: \033[4mhttps://adielsm.github.io/Termo/\033[0m")
 
-            case 201:
-                print("Jogo Finalizado com Sucesso")
+            print("Bom jogo!\n")
 
-            case 202:
-                print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts, response_status)}')
-                self.__render_score_table(extra_info.get(
-                    "rounds_scores"), extra_info.get("total_score"))
-                self.__words_stack.clear()
+        if response_status == self.__protocol['PALAVRA_CORRETA']:
+            print(f'\n🏆 Parabéns! Palavra Correta! 😎\nLista de Palavras Anteriores:\n{(self.__words_stack)}\n{self.__return_attempts(remaining_attempts, response_status)}')
+            self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
+            self.__words_stack.clear()
 
-            case 203:
-                self.__words_stack.stack_up(format_output)
-                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
+        if response_status == self.__protocol['PALAVRA_INCORRETA']:
+            self.__words_stack.stack_up(format_output)
+            print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
 
-            case 204:
-                if self.__words_stack:
-                    print(f"Lista de Palavras:\n{self.__words_stack}")
-                else:
-                    print("Não há palavras inseridas nesta rodada!")
+        if response_status == self.__protocol['LISTAR_PALAVRAS']:
+            if self.__words_stack:
+                print(f"Lista de Palavras:\n{self.__words_stack}")
+            else:
+                print("Não há palavras inseridas nesta rodada!")
 
-            case 205:
-                print("Jogo reiniciado com sucesso")
-                self.__words_stack.clear()
+        if response_status == self.__protocol['JOGO_REINICIADO']:
+            print("Jogo reiniciado com sucesso")
+            self.__words_stack.clear()
 
-            case 206:
-                print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!")
+        if response_status == self.__protocol['JOGO_CONTINUADO']:
+            print(f"Jogo Continuado com Sucesso, Boa Sorte na Próxima Rodada {player_name}!")
 
-            case 207:
-                self.__words_stack.stack_up(format_output)
-                print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
+        if response_status == self.__protocol['FIM_DE_JOGO']:
+            self.__words_stack.stack_up(format_output)
+            print(f"\nPalavra Incorreta!\n{format_output}\n{self.__return_attempts(remaining_attempts, response_status)}")
 
-                self.__words_stack.clear()
-                self.__secret_word_animation(secret_word)
-                self.__render_score_table(extra_info.get(
-                    "rounds_scores"), extra_info.get("total_score"))
+            self.__words_stack.clear()
+            self.__secret_word_animation(secret_word)
+            self.__render_score_table(extra_info.get("rounds_scores"), extra_info.get("total_score"))
+
 
     def __handle_error_cases(self, response_status, **remaining_attempts):
         """
         Manipula os casos de erro de resposta do servidor.
 
         Args:
+            self: A referência para a instância da classe.
             response_status (int): O código de status da resposta.
             remaining_attempts (dict): Dicionário contendo as tentativas restantes.
         
@@ -576,37 +607,42 @@ class Client:
         """
         remaining_attempts = remaining_attempts.get("remaining_attempts")
 
-        match response_status:
-            case 400:
-                print("Jogo já iniciado")
+        if response_status == self.__protocol['JOGO_JA_INICIADO']:
+            print("Jogo já iniciado")
 
-            case 401:
-                print("Jogo não iniciado")
+        elif response_status == self.__protocol['JOGO_NAO_INICIADO']:
+            print("Jogo não iniciado")
 
-            case 402:
-                print(f"É necessário digitar uma palavra\n{self.__return_attempts(remaining_attempts, response_status)}")
+        elif response_status == self.__protocol['NECESSARIO_PARAMETRO']:
+            print(f"É necessário digitar uma palavra\n{self.__return_attempts(remaining_attempts, response_status)}")
 
-            case 403:
-                print(f"A palavra deve ter 5 letras\n{self.__return_attempts(remaining_attempts, response_status)}")
+        elif response_status == self.__protocol['TAMANHO_INCORRETO']:
+            print(f"A palavra deve ter 5 letras\n{self.__return_attempts(remaining_attempts, response_status)}")
 
-            case 404:
-                print(f'A palavra não existe no dicionário\n{self.__return_attempts(remaining_attempts, response_status)}')
+        elif response_status == self.__protocol['PALAVRA_INEXISTENTE']:
+            print(f'A palavra não existe no dicionário\n{self.__return_attempts(remaining_attempts, response_status)}')
 
-            case 405:
-                print(f'Palavra já utilizada\n{self.__return_attempts(remaining_attempts, response_status)}')
+        elif response_status == self.__protocol['PALAVRA_REPETIDA']:
+            print(f'Palavra já utilizada\n{self.__return_attempts(remaining_attempts, response_status)}')
 
-            case 499:
-                print("\033[91m Comando inválido\033[0m")
+        elif response_status == self.__protocol['JOGO_COM_TENTATIVAS_VALIDAS']:
+            print(f'Jogo não pode ser continuado por conter tentátivas válidas! \n{self.__return_attempts(remaining_attempts, response_status)}')
 
-                if remaining_attempts:
-                    print(f'{self.__return_attempts(remaining_attempts, response_status)}')
+        elif response_status == self.__protocol['COMANDO_INVALIDO']:
+            print("\033[91m Comando inválido\033[0m")
+            if remaining_attempts:
+                print(f'{self.__return_attempts(remaining_attempts, response_status)}')
+        else:
+            print("Erro desconhecido, tente novamente!")
+
 
     def __handle_response_status(self, response_status: int, response_data: Dict[str, Any], parameter: Any) -> None:
         """
         Trata o status de resposta recebido do servidor.
 
         Args:
-            response_status (int): O código de status da resposta HTTP.
+            self: A referência para a instância da classe.
+            response_status (int): O código de status da resposta.
             response_data (Dict[str, Any]): Os dados de resposta recebidos do servidor.
             parameter (Any): Um parâmetro adicional.
 
@@ -615,15 +651,11 @@ class Client:
 
         """
         remaining_attempts = response_data.get("remaining_attempts")
-        if response_status == 200:
+        if response_status == self.__protocol['JOGO_INICIADO']:
             self.__render_response(response_status)
             self.__game_status = GameStatus.GAME_IN_PROGRESS
 
-        elif response_status == 201:
-            self.__render_response(response_status)
-            self.__game_status = GameStatus.NO_GAME
-
-        elif response_status == 202:
+        elif response_status == self.__protocol['PALAVRA_CORRETA']:
             self.__render_response(response_status, remaining_attempts=remaining_attempts, rounds_scores=response_data["rounds_scores"], total_score=response_data["total_score"])
 
             self.__print_end_game_message()
@@ -636,17 +668,17 @@ class Client:
 
             self.__game_continued_action()
 
-        elif response_status == 203:
+        elif response_status == self.__protocol['PALAVRA_INCORRETA']:
             color_str = self.__format_output(
                 parameter, response_data["word_encoded"])
             self.__render_response(
                 response_status, format_output=color_str, remaining_attempts=remaining_attempts)
 
-        elif response_status == 206:
+        elif response_status == self.__protocol['JOGO_CONTINUADO']:
             self.__render_response(
                 response_status, player_name=self.__user_name)
 
-        elif response_status == 207:
+        elif response_status == self.__protocol['FIM_DE_JOGO']:
             color_str = self.__format_output(
                 parameter, response_data["word_encoded"])
 
@@ -666,22 +698,17 @@ class Client:
 
     def run(self) -> None:
         """
-        Executa a aplicação cliente.
+        Executa o cliente do jogo.
 
-        Este método estabelece uma conexão com o servidor, solicita ao usuário um nome de usuário
-        e entra em um loop onde exibe uma tabela, solicita ao usuário um comando, envia
-        o comando para o servidor e trata a resposta.
-
-        Args:
-            self: A instância da classe Client.
+        Raises:
+            Inicializa as threads de monitoramento de servidores ativos e gerenciamento de tempo de vida dos servidores.
+            Solicita ao usuário o nome do servidor ao qual deseja se conectar.
+            Realiza a conexão com o servidor e exibe uma mensagem de boas-vindas.
+            Solicita o nome do usuário e inicia um loop para processar os comandos do usuário.
+            Trata exceções como interrupção do teclado, desconexão do servidor e erros genéricos.
 
         Returns:
             None
-
-        Raises:
-            KeyboardInterrupt: Se o usuário interromper o programa.
-            ValueError: Se um valor inválido for inserido pelo usuário.
-            Exception: Se ocorrer qualquer outra exceção.
         """
         try:
             # Inicializa a thread de monitoramento de servidores ativos
@@ -745,7 +772,7 @@ class Client:
                     self.__handle_keyboard_interrupt()
 
                 except OSError:
-                    print("Você foi desconectado do servidor. Ou o servidor está offline ou você ficou inativo por 90 segundos.")
+                    print("Você foi desconectado do servidor. Servidor está offline ou você ficou inativo por 90 segundos.")
                     self.__sock.close()
                     sys.exit(0)
 
@@ -762,10 +789,9 @@ class Client:
             sys.exit(0)
 
         except OSError:
-            print("Você foi desconectado do servidor. Ou o servidor está offline ou você ficou inativo por 90 segundos.")
+            print("Você foi desconectado do servidor. Servidor está offline ou você ficou inativo por 90 segundos.")
             self.__sock.close()
             sys.exit(0)
 
         except Exception as e:
             print(str(e))
-        return
