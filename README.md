@@ -10,6 +10,8 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 - [Instalação](#-instalação)
 - [Tecnologias](#-tecnologias)
 - [Autores](#-autores)
+- [Disciplinas](#-disciplinas)
+- [Arquivos do Projeto](#-arquivos-do-projeto)
 - [Próximos passos](#-próximos-passos)	
 
 ## ⚙️ Funcionalidades
@@ -102,6 +104,7 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 | Pasta/Arquivo | Descrição |
 |:---------------:|:---------------:|
 | 📂Client/ | Pasta responsável por gerenciar o funcionamento do Cliente|
+|:---------------|:---------------:|
 | - 📄__init__.py | Arquivo de inicialização que importa a Classe Client |
 
 ## 👟 Próximos passos
