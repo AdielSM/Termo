@@ -138,12 +138,12 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 | 📂img/ | Pasta que contém os arquivos de imagens utilizadas no README. |
 | 📂utils/ | Pasta que contém os arquivos utilitários, como configurações de Servidor e sumário de Protocolo. |
 | ㄴ 📄__init__.py | Arquivo que importa a Lista e o sumário de Protocolo. |
-| ㄴ 📄LinkedStack.py | Lista encadeada em python. |
+| ㄴ 📄LinkedStack.py | Pilha encadeada em python. |
 | ㄴ 📄server_config.py | Arquivo que retorna as configurações do Servidor. |
 | ㄴ 📄server_config.txt | Arquivo que contém as configurações do Servidor (TAM_MSG e PORT). |
 | ㄴ 📄summary_protocol.py | Retorna um dicionário com as informações do protocolo. |
 | ㄴ 📄summary_protocol.txt | Sumário de Protocolo que contém as mensagens enviadas e seu respectivo código de status. |
-| 📂words_bank/ | Pasta que contém os arquivos de imagens utilizadas no README. |
+| 📂words_bank/ | Pasta que contém os arquivos txt das palavras para o funcionamento do Termo. |
 | ㄴ 📄bd.txt | Arquivo que contém um banco de palavras para testar se a tentativa do jogador é válida. |
 | ㄴ 📄bd_termo.txt | Arquivo que contém um banco de palavras que serão utilizadas no jogo Termo. |
 | 📄.gitIgnore | Arquivo de configuração usado pelo Git para especificar quais arquivos e diretórios devem ser ignorados. |
