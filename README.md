@@ -8,14 +8,14 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 
 - [Página de Regras do Jogo](https://adielsm.github.io/Termo/)
 - [Protocolo da Aplicação](./protocol.md)
-- [Funcionalidades](-funcionalidades)
+- [Funcionalidades](#-funcionalidades)
 - [Instalação](#-instalação)
 - [Tecnologias](#-tecnologias)
 - [Autores](#-autores)
 - [Arquivos do Projeto](#-arquivos-do-projeto)
 - [Próximos passos](#-próximos-passos)
 
-## ⚙️ Funcionalidades
+## 🔧 Funcionalidades
 - [x] O jogo sorteia uma palavra aleatória de um arquivo e recebe palavras do usuário até que haja tentativas disponíveis.
 - [x] O jogo possui um sistema de pontuação que é calculado com base no número de tentativas restantes e no tempo gasto na rodada.
 - [x] O jogo possui um servidor que pode ser acessado por múltiplos clientes que estejam na mesma rede.
