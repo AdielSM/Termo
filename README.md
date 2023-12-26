@@ -8,15 +8,14 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 
 - [Página de Regras do Jogo](https://adielsm.github.io/Termo/)
 - [Protocolo da Aplicação](./protocol.md)
-- [Descrição do Problema e Funcionalidades](#-descrição-do-problema-e-funcionalidades)
+- [Funcionalidades](-funcionalidades)
 - [Instalação](#-instalação)
 - [Tecnologias](#-tecnologias)
 - [Autores](#-autores)
-- [Disciplinas](#-disciplinas)
 - [Arquivos do Projeto](#-arquivos-do-projeto)
 - [Próximos passos](#-próximos-passos)
 
-## ⚙️ Descrição do Problema e Funcionalidades
+## ⚙️ Funcionalidades
 - [x] O jogo sorteia uma palavra aleatória de um arquivo e recebe palavras do usuário até que haja tentativas disponíveis.
 - [x] O jogo possui um sistema de pontuação que é calculado com base no número de tentativas restantes e no tempo gasto na rodada.
 - [x] O jogo possui um servidor que pode ser acessado por múltiplos clientes que estejam na mesma rede.
@@ -24,16 +23,6 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 
   
 ## 💻 Instalação
-### 📕 Bibliotecas Utilizadas
-- prettytable==3.9.0: Facilita a criação de tabelas bem formatadas em texto. Ela fornece uma maneira simples de organizar dados em colunas e linhas, tornando a exibição de informações tabulares mais legível e esteticamente agradável. Usado para menu e ranking do jogador.
-
-- wcwidth==0.2.12: Essa biblioteca é usada para calcular a largura de caracteres Unicode em uma string. Ela é útil quando precisa lidar com texto que contém caracteres de largura variável, como caracteres de largura dupla usados em alguns idiomas asiáticos, sendo usada para menu e ranking do jogador.
-
-- zeroconf==0.131.0: Essa biblioteca implementa o protocolo Zeroconf, que permite a descoberta automática de serviços em uma rede local. Ela facilita a comunicação entre dispositivos em uma rede sem a necessidade de configuração manual. É utilizada para o servidor anuncia a cada período de tempo que está disponível na rede local, permitindo que o cliente saiba da sua atividade e liste para o usuário final.
-
-- psutil==5.9.7: Fornece uma interface para acessar informações sobre o sistema operacional em que o código está sendo executado. Ela permite que você obtenha informações sobre o uso da CPU, memória, disco, rede e outros recursos do sistema, sendo usada junto com iifaddr para o servidor retornar seu endereço IP privado.
-
-- iifaddr==0.2.0: Útil quando precisa descobrir quais interfaces de rede estão ativas e quais endereços IP estão associados a elas, sendo usada para o servidor retornar seu endereço IP privado.
 
 ### Passo a Passo
 
@@ -109,12 +98,6 @@ As seguintes tecnologias foram utilizadas no desenvolvimento do projeto:
 | <img src="./img/adielPerfilGithub.jpg" width="100" height="100"> | <img src="./img/caioPerfilGithub.png" width="100" height="100"> | <img src="./img/carlosPerfilGithub.jpg" width="100" height="100"> |
 |:---:|:---:|:---:|
 | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Adiel-blue)](https://www.linkedin.com/in/adiel-melo-073009273/) [![GitHub](https://img.shields.io/badge/GitHub-AdielSM-black)](https://github.com/AdielSM) | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Caio-blue)](https://www.linkedin.com/in/caio-soares-8b8a81251) [![GitHub](https://img.shields.io/badge/GitHub-Caio1-black)](https://github.com/caiosoares1) | [![LinkedIn](https://img.shields.io/badge/LinkedIn-Carlos-blue)](https://www.linkedin.com/in/jovemcarlos/) [![GitHub](https://img.shields.io/badge/GitHub-CarlosTI-black)](https://github.com/JovemCarlosTI) |
-
-## 📚 Disciplinas
-
-- Estruturas de Dados (Alex Sandro Rêgo)
-- Sistemas Operacionais (Gustavo Wagner)
-- Protocolos de Interconexão de Redes de Computadores (Leonidas Lima)
 
 ## 📂 Arquivos do Projeto
 
