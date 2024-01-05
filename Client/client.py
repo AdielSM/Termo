@@ -794,7 +794,7 @@ class Client:
             sys.exit(0)
 
         except OSError:
-            print("Você foi desconectado do servidor. Servidor está offline ou você ficou inativo por 90 segundos.")
+            print("Você foi desconectado do servidor. Servidor está offline ou você ficou inativo por 150 segundos.")
             self.__sock.close()
             sys.exit(0)
 
