@@ -20,6 +20,7 @@ Projeto desenvolvido para simular o jogo de palavras Termo, onde o jogador deve 
 - [x] O jogo possui um sistema de pontuação que é calculado com base no número de tentativas restantes e no tempo gasto na rodada.
 - [x] O jogo possui um servidor que pode ser acessado por múltiplos clientes que estejam na mesma rede.
 - [x] O cliente pode se conectar ao servidor que desejar, desde que esteja na mesma rede.
+- [ ] O jogo possui um sistema de desconexão por inatividade, onde o jogador é desconectado do servidor caso fique inativo por 150 segundos.
 
   
 ## 💻 Instalação
