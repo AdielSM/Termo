@@ -104,7 +104,7 @@ class Server:
                 clients_to_remove = []
 
                 for player, last_msg_time in self.__last_msgs_clients.items():
-                    if current_time - last_msg_time > 90:
+                    if current_time - last_msg_time > 150:
                         clients_to_remove.append(player)
 
                 if clients_to_remove:
