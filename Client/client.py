@@ -251,7 +251,12 @@ class Client:
             command = "restart_game"
             parameter = self.__user_name
 
+
         else:
+
+            if len(user_command.strip()) == 0:
+                raise ValueError("Comando inválido: Vazio")
+
             raise ValueError("Comando inválido:" + " " + user_command)
 
         return (command, parameter)
